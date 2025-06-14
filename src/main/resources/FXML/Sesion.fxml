@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.CSesion">
+    <children>
+        <HBox fx:id="mainContainer" spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <!-- Panel izquierdo (formulario) -->
+            <VBox fx:id="formPanel" alignment="CENTER" styleClass="form-panel" HBox.hgrow="ALWAYS">
+                <children>
+                    <Label styleClass="title-label" text="Iniciar Sesion" />
+                    <Label styleClass="divider-label" text="Ingresa tus datos" />
+                    <TextField fx:id="txtCorreo" promptText="Usuario/Correo" styleClass="form-field" />
+                    <PasswordField fx:id="txtContrasena" promptText="Contraseña" styleClass="form-field" />
+                    <Hyperlink styleClass="forgot-password" text="¿Olvidaste tu contraseña?" />
+                    <Button onMouseClicked="#IniciarSesion" styleClass="signin-button" text="Iniciar Sesion" />
+                </children>
+                <padding>
+                    <Insets bottom="40" left="50" right="50" top="40" />
+                </padding>
+                <spacing>20</spacing>
+            </VBox>
+
+            <!-- Panel derecho (bienvenida) -->
+            <VBox fx:id="welcomePanel" alignment="CENTER" styleClass="welcome-panel" HBox.hgrow="ALWAYS">
+                <children>
+                    <Label styleClass="welcome-title" text="¡BIENVENIDO!" />
+                    <Label styleClass="welcome-subtitle" text="¡Ingresa tus datos personales para vivir una vida más organizada!" wrapText="true" />
+                    <Button onAction="#CrearCuenta" styleClass="signup-button" text="CREAR CUENTA" />
+                </children>
+                <padding>
+                    <Insets bottom="40" left="50" right="50" top="40" />
+                </padding>
+                <spacing>20</spacing>
+            </VBox>
+        </HBox>
+    </children>
+</AnchorPane>
