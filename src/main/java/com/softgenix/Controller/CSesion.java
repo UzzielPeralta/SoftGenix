@@ -39,10 +39,6 @@ public class CSesion {
         String correo = txtCorreo.getText().trim();
         String contrasena = txtContrasena.getText().trim();
 
-        if (correo.isEmpty() || contrasena.isEmpty()) {
-            App.showCustomAlert("Por favor, completa todos los campos.");
-            return;
-        }
 
         App.app.setScene(Path.Main);
     }
