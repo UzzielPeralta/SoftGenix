@@ -70,3 +70,24 @@
     -fx-background-radius: 5px;
     -fx-cursor: hand;
 }
+
+.login-button:hover {
+    -fx-background-color: #1BA73A;
+}
+
+/* --- Hipervínculos --- */
+.hyperlink-style {
+    -fx-font-size: 13px;
+    -fx-text-fill: #f6f8f9;
+    -fx-border-color: transparent;
+}
+
+.hyperlink-style:hover {
+    -fx-underline: true;
+}
+
+/* --- Texto de Registro --- */
+.no-account-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #FFFFFF;
+}
