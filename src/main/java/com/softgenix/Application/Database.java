@@ -31,4 +31,22 @@ public class Database {
             return false;
         }
     }
+    public static boolean validateUser(String email, String password) {
+        String sql = "SELECT USER_KEY FROM USERS WHERE USER_EMAIL = ? AND USER_KEY = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, email);
+            pstmt.setString(2, password);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al validar el usuario: " + e.getMessage());
+            return false;
+        }
+    }
 }
