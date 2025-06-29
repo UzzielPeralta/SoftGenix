@@ -53,3 +53,49 @@
                                     </ImageView>
                                 </children>
                                 </HBox>
+
+                                <HBox alignment="CENTER_LEFT" maxWidth="250.0" spacing="20.0"> <children>
+                                    <Label alignment="CENTER" contentDisplay="CENTER" styleClass="welcome-label" text="Bienvenido De Nuevo" textAlignment="CENTER" textFill="WHITE">
+                                        <font>
+                                            <Font name="System Bold" size="24.0" />
+                                        </font>
+                                        <HBox.margin>
+                                            <Insets left="-5.0" top="28.0" />
+                                        </HBox.margin>
+                                    </Label>
+                                </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Correo Electrónico:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <TextField fx:id="emailField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-envelope" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Contraseña:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <PasswordField fx:id="passwordField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-lock" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox
