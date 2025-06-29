@@ -98,4 +98,25 @@
                                     </children>
                                 </StackPane>
                             </children>
-                        </VBox
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" />
+                        <Button mnemonicParsing="false" onAction="#InicioSesion" prefHeight="40.0" prefWidth="150.0" styleClass="login-button" text="Iniciar Sesión">
+                            <VBox.margin>
+                                <Insets top="-5.0" />
+                            </VBox.margin>
+                        </Button>
+                        <HBox alignment="CENTER" spacing="5.0">
+                            <children>
+                                <Label styleClass="no-account-label" text="¿No tienes una cuenta?" />
+                                <Hyperlink onAction="#crear" styleClass="hyperlink-style" text="Regístrate" />
+                            </children>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</StackPane>
