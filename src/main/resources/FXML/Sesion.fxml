@@ -1,46 +1,122 @@
-<?xml version="1.0" encoding="UTF-8"?>
+?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Hyperlink?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+        <?import javafx.geometry.Insets?>
+        <?import javafx.scene.control.Button?>
+        <?import javafx.scene.control.Hyperlink?>
+        <?import javafx.scene.control.Label?>
+        <?import javafx.scene.control.PasswordField?>
+        <?import javafx.scene.control.TextField?>
+        <?import javafx.scene.image.Image?>
+        <?import javafx.scene.image.ImageView?>
+        <?import javafx.scene.layout.HBox?>
+        <?import javafx.scene.layout.StackPane?>
+        <?import javafx.scene.layout.VBox?>
+        <?import javafx.scene.text.Font?>
+        <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.CSesion">
+<StackPane alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.CSesion">
     <children>
-        <HBox fx:id="mainContainer" spacing="0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <!-- Panel izquierdo (formulario) -->
-            <VBox fx:id="formPanel" alignment="CENTER" styleClass="form-panel" HBox.hgrow="ALWAYS">
-                <children>
-                    <Label styleClass="title-label" text="Iniciar Sesion" />
-                    <Label styleClass="divider-label" text="Ingresa tus datos" />
-                    <TextField fx:id="txtCorreo" promptText="Usuario/Correo" styleClass="form-field" />
-                    <PasswordField fx:id="txtContrasena" promptText="Contraseña" styleClass="form-field" />
-                    <Hyperlink styleClass="forgot-password" text="¿Olvidaste tu contraseña?" />
-                    <Button onMouseClicked="#IniciarSesion" styleClass="signin-button" text="Iniciar Sesion" />
-                </children>
-                <padding>
-                    <Insets bottom="40" left="50" right="50" top="40" />
-                </padding>
-                <spacing>20</spacing>
-            </VBox>
+        <HBox alignment="CENTER">
+            <children>
+                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="450.0" styleClass="right-panel">
+                    <children>
+                        <ImageView fitHeight="600.0" fitWidth="450.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/Image/LoginI.png" />
+                            </image>
+                        </ImageView>
+                    </children>
+                </VBox>
 
-            <!-- Panel derecho (bienvenida) -->
-            <VBox fx:id="welcomePanel" alignment="CENTER" styleClass="welcome-panel" HBox.hgrow="ALWAYS">
-                <children>
-                    <Label styleClass="welcome-title" text="¡BIENVENIDO!" />
-                    <Label styleClass="welcome-subtitle" text="¡Ingresa tus datos personales para vivir una vida más organizada!" wrapText="true" />
-                    <Button onAction="#CrearCuenta" styleClass="signup-button" text="CREAR CUENTA" />
-                </children>
-                <padding>
-                    <Insets bottom="40" left="50" right="50" top="40" />
-                </padding>
-                <spacing>20</spacing>
-            </VBox>
+                <VBox alignment="CENTER" prefHeight="600.0" prefWidth="450.0" spacing="15.0" styleClass="right-pane">
+                    <padding>
+                        <Insets bottom="50.0" left="80.0" right="80.0" top="50.0" />
+                    </padding>
+                    <children>
+                        <VBox prefHeight="100.0">
+                            <children>
+                                <HBox alignment="CENTER" maxWidth="250.0" spacing="10.0"> <children>
+                                    <Label styleClass="zendo-title-label" text="ZENDO" textFill="WHITE">
+                                        <font>
+                                            <Font name="System Bold" size="24.0" />
+                                        </font>
+                                        <HBox.margin>
+                                            <Insets top="-17.0" />
+                                        </HBox.margin>
+                                    </Label>
+                                    <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                        <image>
+                                            <Image url="@/Image/Zendo_loto.png" /> </image>
+                                        <HBox.margin>
+                                            <Insets right="30.0" top="-17.0" />
+                                        </HBox.margin>
+                                    </ImageView>
+                                </children>
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" maxWidth="250.0" spacing="20.0"> <children>
+                                    <Label alignment="CENTER" contentDisplay="CENTER" styleClass="welcome-label" text="Bienvenido De Nuevo" textAlignment="CENTER" textFill="WHITE">
+                                        <font>
+                                            <Font name="System Bold" size="24.0" />
+                                        </font>
+                                        <HBox.margin>
+                                            <Insets left="-5.0" top="28.0" />
+                                        </HBox.margin>
+                                    </Label>
+                                </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Correo Electrónico:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <TextField fx:id="emailField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-envelope" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Contraseña:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <PasswordField fx:id="passwordField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-lock" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" />
+                        <Button mnemonicParsing="false" onAction="#InicioSesion" prefHeight="40.0" prefWidth="150.0" styleClass="login-button" text="Iniciar Sesión">
+                            <VBox.margin>
+                                <Insets top="-5.0" />
+                            </VBox.margin>
+                        </Button>
+                        <HBox alignment="CENTER" spacing="5.0">
+                            <children>
+                                <Label styleClass="no-account-label" text="¿No tienes una cuenta?" />
+                                <Hyperlink onAction="#crear" styleClass="hyperlink-style" text="Regístrate" />
+                            </children>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
         </HBox>
     </children>
-</AnchorPane>
+</StackPane>

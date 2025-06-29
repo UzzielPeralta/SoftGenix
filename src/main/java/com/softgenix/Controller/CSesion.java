@@ -33,16 +33,28 @@ public class CSesion {
         App.app.setScene(Path.Registrar);
     }
 
+    // Método de ayuda para mostrar alertas (puedes copiarlo de CRegistro.java)
+    private void showAlert(Alert.AlertType alertType, String title, String message) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     @FXML
-    void IniciarSesion(MouseEvent event) {
-        String correo = txtCorreo.getText().trim();
-        String contrasena = txtContrasena.getText().trim();
+    void crear(ActionEvent event) {
+        try {
+            App.app.setScene(Path.Registrar);
+        } catch (Exception e) {
+            System.err.println("Error al cambiar de escena: " + e.getMessage());
+        }
 
-
-        App.app.setScene(Path.Main);
     }
 }
+
+
+
 
 
 
