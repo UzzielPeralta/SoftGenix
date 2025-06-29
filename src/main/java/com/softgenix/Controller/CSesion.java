@@ -1,36 +1,44 @@
 package com.softgenix.Controller;
 
 import com.softgenix.Application.App;
+import com.softgenix.Application.Database;
 import com.softgenix.Utils.Path;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 public class CSesion {
+    @FXML
+    private TextField emailField;
 
     @FXML
-    private VBox formPanel;
+    private PasswordField passwordField;
 
     @FXML
-    private HBox mainContainer;
+    void InicioSesion(ActionEvent event) {
+        String email = emailField.getText();
+        String password = passwordField.getText();
 
-    @FXML
-    private PasswordField txtContrasena;
+        // 1. Validaciones básicas
+        if (email.isEmpty() || password.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error de Validación", "El correo y la contraseña son obligatorios.");
+            return;
+        }
 
-    @FXML
-    private TextField txtCorreo;
+        // 2. Llamar al método de validación de la base de datos
+        boolean isValid = Database.validateUser(email, password);
 
-    @FXML
-    private VBox welcomePanel;
+        // 3. Mostrar un mensaje según el resultado
+        if (isValid) {
+            showAlert(Alert.AlertType.INFORMATION, "Inicio de Sesión Exitoso", "¡Bienvenido!");
+            App.app.setScene(Path.Main);
 
-    @FXML
-    void CrearCuenta(ActionEvent event) {
-        App.app.setScene(Path.Registrar);
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Error de Inicio de Sesión", "El correo o la contraseña son incorrectos.");
+        }
+
     }
 
     // Método de ayuda para mostrar alertas (puedes copiarlo de CRegistro.java)
@@ -42,6 +50,7 @@ public class CSesion {
         alert.showAndWait();
     }
 
+
     @FXML
     void crear(ActionEvent event) {
         try {
@@ -52,7 +61,6 @@ public class CSesion {
 
     }
 }
-
 
 
 
