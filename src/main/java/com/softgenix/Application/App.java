@@ -1,6 +1,6 @@
 package com.softgenix.Application;
 
-import com.softgenix.Controller.CAlerta;
+
 import com.softgenix.Utils.Path;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -56,32 +56,5 @@ public class App extends Application {
             e.printStackTrace();
         }
     }
-
-    public static void showCustomAlert(String message) {
-        try {
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/FXML/Alerta.fxml"));
-            Parent root = loader.load();
-
-            CAlerta controller = loader.getController();
-            Stage alertStage = new Stage();
-            controller.setDialogStage(alertStage);
-            controller.setMessage(message);
-
-            Scene scene = new Scene(root);
-
-            // Aplica el CSS SOLO para la alerta
-            URL cssUrl = App.class.getResource("/Styles/Alerta.css");
-            if (cssUrl != null) {
-                scene.getStylesheets().add(cssUrl.toExternalForm());
-            }
-
-            alertStage.setScene(scene);
-            alertStage.setResizable(false);
-            alertStage.initModality(Modality.APPLICATION_MODAL);
-            alertStage.setTitle("Advertencia");
-            alertStage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
-}
+
