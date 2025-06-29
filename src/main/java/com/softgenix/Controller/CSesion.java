@@ -32,7 +32,7 @@ public class CSesion {
     void CrearCuenta(ActionEvent event) {
         App.app.setScene(Path.Registrar);
     }
-
+    
 
     @FXML
     void IniciarSesion(MouseEvent event) {
@@ -41,6 +41,7 @@ public class CSesion {
         App.app.setScene(Path.Main);
     }
 }
+
 
 
 
