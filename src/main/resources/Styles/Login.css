@@ -28,3 +28,45 @@
     -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
 }
+
+.text-field-with-icon {
+    -fx-font-size: 14px;
+    -fx-pref-height: 40px;
+    -fx-max-width: 250px;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DDE2E8;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    /* CAMBIO CLAVE: Añadir 5px de padding vertical para igualar al registro */
+    -fx-padding: 5px 10px;
+}
+
+/* ... otros estilos ... */
+
+.text-field-with-icon:focused-within {
+    -fx-border-color: #0078D7;
+}
+
+.text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.input-icon {
+    -fx-icon-size: 16px;
+    -fx-fill: #888888;
+    -fx-padding: 0 12px 0 0;
+}
+
+
+/* --- Botón de Inicio de Sesión --- */
+.login-button {
+    -fx-background-color: #169633;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
