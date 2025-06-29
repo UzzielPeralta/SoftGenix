@@ -38,8 +38,6 @@ public class CSesion {
     void IniciarSesion(MouseEvent event) {
         String correo = txtCorreo.getText().trim();
         String contrasena = txtContrasena.getText().trim();
-
-
         App.app.setScene(Path.Main);
     }
 }
