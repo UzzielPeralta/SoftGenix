@@ -1,111 +1,93 @@
+/* --- Estilos Generales --- */
 .root {
-    -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-background-color: linear-gradient(to right, #ff4b2b, #ff416c);
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-background-color: #40a4d2;
 }
 
-/* Contenedor principal (HBox) */
-.main-container {
-    -fx-background-color: white;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 0);
+/* --- Panel Izquierdo --- */
+.left-pane {
+    -fx-background-color: #F4F7FC;
 }
 
-/* Panel del formulario (izquierdo) */
-.form-panel {
-    -fx-background-color: white;
-    -fx-padding: 5%;
-    -fx-spacing: 2em;
-    -fx-alignment: center;
+/* --- Panel Derecho --- */
+.right-pane {
+    -fx-background-color: #40a4d2;
 }
 
-/* Panel de bienvenida (derecho) */
-.welcome-panel {
-    -fx-background-color: linear-gradient(to bottom right, #4a90e2, #6bb9f0);
-    -fx-padding: 5%;
-    -fx-spacing: 2em;
-    -fx-alignment: center;
+/* --- Títulos y Logo --- */
+
+
+.subtitle-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #FFFFFF;
 }
 
-/* Título principal */
-.title-label, .welcome-title {
-    -fx-font-size: 2em;
+/* --- Etiquetas del Formulario --- */
+.form-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
-    -fx-text-fill: #333;
 }
 
-/* Subtítulo */
-.divider-label {
-    -fx-text-fill: #999;
-    -fx-font-size: 1em;
-}
-
-/* Campos de texto */
-.form-field {
-    -fx-pref-width: 250px; /* ancho preferido más pequeño */
-    -fx-max-width: 300px;  /* máximo ancho permitido */
-    -fx-pref-height: 2.5em;
-    -fx-background-radius: 5px;
+.text-field-with-icon {
+    -fx-font-size: 14px;
+    -fx-pref-height: 40px;
+    -fx-max-width: 250px;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DDE2E8;
+    -fx-border-width: 1.5px;
     -fx-border-radius: 5px;
-    -fx-border-color: #ddd;
-    -fx-border-width: 1px;
-    -fx-padding: 0 10px;
-    -fx-font-size: 1em;
-}
-
-
-.form-field:focused {
-    -fx-border-color: #4a90e2;
-}
-
-/* Botones */
-.signin-button, .signup-button {
-    -fx-pref-width: 200px; /* ancho fijo para mostrar texto completo */
-    -fx-pref-height: 2.5em;
-    -fx-font-size: 1em;
-    -fx-font-weight: bold;
     -fx-background-radius: 5px;
-    -fx-cursor: hand;
+    /* CAMBIO CLAVE: Añadir 5px de padding vertical para igualar al registro */
+    -fx-padding: 5px 10px;
 }
 
-/* Iniciar sesión */
-.signin-button {
-    -fx-background-color: #4a90e2;
-    -fx-text-fill: white;
+/* ... otros estilos ... */
+
+.text-field-with-icon:focused-within {
+    -fx-border-color: #0078D7;
 }
 
-.signin-button:hover {
-    -fx-background-color: #3a7bc8;
-}
-
-/* Crear cuenta */
-.signup-button {
+.text-field {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-border-color: white;
-    -fx-border-width: 1px;
-    -fx-border-radius: 5px;
-}
-
-.signup-button:hover {
-    -fx-background-color: rgba(255,255,255,0.1);
-}
-
-/* Texto de bienvenida */
-.welcome-subtitle {
-    -fx-font-size: 1em;
-    -fx-text-fill: white;
-    -fx-text-alignment: center;
-    -fx-wrap-text: true;
-    -fx-max-width: 300px; /* ancho fijo para que haga wrap */
-}
-
-/* Hipervínculo */
-.forgot-password {
-    -fx-text-fill: #666;
-    -fx-font-size: 0.9em;
     -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.input-icon {
+    -fx-icon-size: 16px;
+    -fx-fill: #888888;
+    -fx-padding: 0 12px 0 0;
+}
+
+
+/* --- Botón de Inicio de Sesión --- */
+.login-button {
+    -fx-background-color: #169633;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
     -fx-cursor: hand;
 }
 
-.forgot-password:hover {
-    -fx-text-fill: #4a90e2;
+.login-button:hover {
+    -fx-background-color: #1BA73A;
+}
+
+/* --- Hipervínculos --- */
+.hyperlink-style {
+    -fx-font-size: 13px;
+    -fx-text-fill: #f6f8f9;
+    -fx-border-color: transparent;
+}
+
+.hyperlink-style:hover {
+    -fx-underline: true;
+}
+
+/* --- Texto de Registro --- */
+.no-account-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #FFFFFF;
 }
