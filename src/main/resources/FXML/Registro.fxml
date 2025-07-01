@@ -31,7 +31,7 @@
                             </Label>
                             <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
                                 <image>
-                                    <Image url="@/Image/Zendo_loto.png" /> </image>
+                                    <Image url="@/images/Zendo_loto.png" /> </image>
                                 <HBox.margin>
                                     <Insets right="35.0" />
                                 </HBox.margin>
@@ -145,7 +145,7 @@
                 <VBox alignment="CENTER" prefHeight="200.0" prefWidth="450.0" styleClass="right-panel">
                     <children>
                         <ImageView fitHeight="600.0" fitWidth="450.0" pickOnBounds="true" preserveRatio="true"> <image>
-                            <Image url="@/Image/Registro.png" /> </image>
+                            <Image url="@/images/Registro.png" /> </image>
                         </ImageView>
                     </children>
                 </VBox>
