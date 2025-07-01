@@ -116,3 +116,29 @@
                                 </StackPane>
                             </children>
                         </VBox>
+                        <HBox alignment="CENTER_LEFT">
+                            <Button mnemonicParsing="false" onAction="#registrarUsuario" prefHeight="40.0" prefWidth="150.0" styleClass="login-button" text="Crear cuenta">
+                                <HBox.margin>
+                                    <Insets left="50.0" />
+                                </HBox.margin></Button>
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="5.0">
+                            <children>
+                                <Label text="¿Tienes una cuenta?" textFill="WHITE">
+                                    <HBox.margin>
+                                        <Insets />
+                                    </HBox.margin></Label>
+                                <Hyperlink onAction="#InicioSesion" styleClass="hyperlink-style" text="Inicia sesión" />
+                            </children>
+                            <VBox.margin>
+                                <Insets left="40.0" />
+                            </VBox.margin>
+                        </HBox>
+                    </children>
+                    <padding>
+                        <Insets left="50.0" right="50.0" />
+                    </padding>
+                </VBox>
