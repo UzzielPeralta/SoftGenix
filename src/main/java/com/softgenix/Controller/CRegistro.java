@@ -33,5 +33,30 @@ public class CRegistro {
     @FXML
     private CheckBox termsCheckBox; //
 
+    @FXML
+    void registrarUsuario(ActionEvent event) {
+        // Obtener los datos de los campos de texto
+        String name = nameField.getText();
+        String lastName = lastNameField.getText();
+        String email = emailField.getText();
+        String password = passwordField.getText();
+
+        // Validaciones básicas
+        if (name.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error de Validación", "Todos los campos son obligatorios.");
+            return;
+        }
+
+
+        //Llamar al metodo en DatabaseManager para añadir el usuario
+        boolean success = Database.addUser(name, lastName, email, password);
+
+        // Mostrar un mensaje al usuario
+        if (success) {
+            App.app.setScene(Path.Sesion);
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Error en la Base de Datos", "No se pudo registrar el usuario. Es posible que el correo ya exista.");
+        }
+    }
 
 }
