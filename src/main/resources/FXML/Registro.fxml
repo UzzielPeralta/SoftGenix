@@ -142,3 +142,14 @@
                         <Insets left="50.0" right="50.0" />
                     </padding>
                 </VBox>
+                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="450.0" styleClass="right-panel">
+                    <children>
+                        <ImageView fitHeight="600.0" fitWidth="450.0" pickOnBounds="true" preserveRatio="true"> <image>
+                            <Image url="@/Image/Registro.png" /> </image>
+                        </ImageView>
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</StackPane>
