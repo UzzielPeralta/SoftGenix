@@ -9,3 +9,11 @@
     -fx-background-color: white;
     -fx-alignment: center;
 }
+
+.zendo-title-label {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 0;
+}
+
