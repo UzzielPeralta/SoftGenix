@@ -49,3 +49,70 @@
                             </Label>
                         </children>
                         </HBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Nombre:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <TextField fx:id="nameField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-user" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Apellido:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <TextField fx:id="lastNameField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-user" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Correo Electrónico:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <TextField fx:id="emailField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-envelope" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
+
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label styleClass="form-label" text="Contraseña:" />
+                                <StackPane styleClass="text-field-with-icon">
+                                    <children>
+                                        <PasswordField fx:id="passwordField" prefHeight="30.0" prefWidth="250.0" styleClass="text-field" />
+                                        <FontIcon iconLiteral="fas-lock" styleClass="input-icon">
+                                            <StackPane.alignment>CENTER_RIGHT</StackPane.alignment>
+                                            <StackPane.margin>
+                                                <Insets right="5.0" />
+                                            </StackPane.margin>
+                                        </FontIcon>
+                                    </children>
+                                </StackPane>
+                            </children>
+                        </VBox>
