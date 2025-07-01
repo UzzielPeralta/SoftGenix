@@ -1,0 +1,11 @@
+.signin-link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #0078D7;
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.left-panel {
+    -fx-background-color: white;
+    -fx-alignment: center;
+}
