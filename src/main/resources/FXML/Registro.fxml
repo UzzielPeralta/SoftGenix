@@ -23,3 +23,29 @@
                         <Insets left="50.0" right="50.0" />
                     </padding>
                     <children>
+                        <HBox alignment="CENTER" maxWidth="250.0" spacing="10.0"> <children>
+                            <Label styleClass="zendo-title-label" text="ZENDO" textFill="WHITE">
+                                <font>
+                                    <Font name="System Bold" size="24.0" />
+                                </font>
+                            </Label>
+                            <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <Image url="@/Image/Zendo_loto.png" /> </image>
+                                <HBox.margin>
+                                    <Insets right="35.0" />
+                                </HBox.margin>
+                            </ImageView>
+                        </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" maxWidth="250.0" spacing="10.0"> <children>
+                            <Label id="titulo" styleClass="welcome-title-registro" text="Bienvenido a Zendo" textFill="WHITE">
+                                <font>
+                                    <Font name="System Bold" size="24.0" />
+                                </font>
+                                <HBox.margin>
+                                    <Insets left="-15.0" />
+                                </HBox.margin>
+                            </Label>
+                        </children>
+                        </HBox>
