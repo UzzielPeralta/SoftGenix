@@ -12,4 +12,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class CRegistro {
+    // Este método ya lo tenías, para ir a la pantalla de sesión
+    @FXML
+    void InicioSesion(ActionEvent event) {
+        App.app.setScene(Path.Sesion);
+    }
 }
