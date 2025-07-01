@@ -17,3 +17,9 @@
     -fx-padding: 0;
 }
 
+.welcome-title-registro {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 0;
+}
