@@ -17,4 +17,21 @@ public class CRegistro {
     void InicioSesion(ActionEvent event) {
         App.app.setScene(Path.Sesion);
     }
+    //Campos FXML existentes
+    @FXML
+    private TextField emailField; //
+
+    @FXML
+    private TextField lastNameField; //
+
+    @FXML
+    private TextField nameField; //
+
+    @FXML
+    private PasswordField passwordField; //
+
+    @FXML
+    private CheckBox termsCheckBox; //
+
+
 }
