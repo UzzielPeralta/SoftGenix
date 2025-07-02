@@ -1,3 +1,6 @@
+# Ignorar archivo de propiedades de la base de datos
+db.properties
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
