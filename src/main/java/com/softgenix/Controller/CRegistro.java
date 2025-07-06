@@ -74,8 +74,6 @@ public class CRegistro {
 
             boolean success = registroTask.getValue();
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Registro Exitoso",
-                        "Usuario creado correctamente. Ahora puede iniciar sesión.");
                 App.app.setScene(Path.Sesion);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error en la Base de Datos",
