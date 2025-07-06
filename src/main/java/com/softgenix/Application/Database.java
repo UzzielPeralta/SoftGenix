@@ -4,26 +4,38 @@ import java.sql.*;
 import java.util.Properties;
 
 public class Database {
+    // Actualiza la URL para usar el mismo nombre del Wallet
+    private static final String URL = "jdbc:oracle:thin:@zendo_high";
+    private static final String USER = "ADMIN";
+    private static final String PASSWORD = "Zendo123****";
+    private static final String WALLET_PATH = "C:/Users/erick/Downloads/Wallet_Zendo";
 
-    // --- CAMBIO AQUÍ ---
-    // Asegúrate de que este alias coincida EXACTAMENTE con una entrada en tu tnsnames.ora
-    //
-    private static final String DB_ALIAS = "zendo_medium"; // O _high, _low, etc.
-
-    private static final String USERNAME = "ADMIN";
-    private static final String PASSWORD = "Zendo1234***";
-    private static final String WALLET_PATH = "C:\\Users\\erick\\Downloads\\Wallet_Zendo";
 
     public static Connection getConnection() throws SQLException {
-        // El resto del código no necesita cambios
-        String url = "jdbc:oracle:thin:@" + DB_ALIAS;
-        Properties props = new Properties();
-        props.setProperty("user", USERNAME);
-        props.setProperty("password", PASSWORD);
-        props.setProperty("oracle.net.tns_admin", WALLET_PATH);
-        props.setProperty("oracle.net.ssl_server_dn_match", "true");
-        return DriverManager.getConnection(url, props);
+        try {
+            System.setProperty("oracle.net.tns_admin", WALLET_PATH);
+            System.setProperty("oracle.net.ssl_server_dn_match", "true");
+
+            // Añadir más diagnóstico
+            System.out.println("Intentando conectar con usuario: " + USER);
+            System.out.println("Propiedades del sistema: oracle.net.tns_admin=" + System.getProperty("oracle.net.tns_admin"));
+
+            Properties props = new Properties();
+            props.setProperty("user", USER);
+            props.setProperty("password", PASSWORD);
+            props.setProperty("oracle.jdbc.readTimeout", "15000");
+            props.setProperty("oracle.jdbc.connectTimeout", "15000");
+
+            return DriverManager.getConnection(URL, props);
+        } catch (SQLException e) {
+            System.err.println("Error detallado: " + e.toString());
+            if (e.getNextException() != null) {
+                System.err.println("Causa secundaria: " + e.getNextException());
+            }
+            throw e;
+        }
     }
+
 
     // ... los métodos addUser y validateUser están correctos y no necesitan cambios ...
     public static boolean addUser(String nombreUsuario, String email, String password, String rol) {

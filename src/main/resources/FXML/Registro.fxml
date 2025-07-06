@@ -117,7 +117,7 @@
                                 </StackPane>
                             </children>
                         </VBox>
-                        <CheckBox fx:id="adminCheckBox" mnemonicParsing="false" styleClass="form-label" text="Usuario admin:" textFill="WHITE">
+                        <CheckBox  fx:id="adminCheckBox" mnemonicParsing="false" styleClass="form-label" text="Usuario admin:" textFill="WHITE">
                             <VBox.margin>
                                 <Insets left="-30.0" right="100.0" top="10.0" />
                             </VBox.margin>
