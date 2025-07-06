@@ -31,8 +31,6 @@ public class CRegistro {
     @FXML
     private CheckBox termsCheckBox;
 
-    // 1. Añade el campo para el CheckBox de administrador
-    //    Asegúrate de que en tu archivo Registro.fxml el CheckBox tenga fx:id="adminCheckBox"
     @FXML
     private CheckBox adminCheckBox;
 
@@ -48,14 +46,12 @@ public class CRegistro {
             return;
         }
 
-        // --- CAMBIOS AQUÍ ---
-        // Combinar nombre y apellido
         String nombreUsuario = name + " " + lastName;
 
-        // 2. Determinar el rol basado en si el CheckBox está marcado
-        String rol = adminCheckBox.isSelected() ? "Administrador" : "Encargado";
+        // --- CAMBIO AQUÍ ---
+        // Determinar el rol. Si el checkbox no está marcado, el rol será "Usuario".
+        String rol = adminCheckBox.isSelected() ? "Administrador" : "Usuario";
 
-        // 3. Llamar al método de la base de datos con el rol determinado
         boolean success = Database.addUser(nombreUsuario, email, password, rol);
 
         if (success) {
