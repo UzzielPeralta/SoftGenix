@@ -1,4 +1,4 @@
-package com.softgenix.Application;
+package com.softgenix.Dao;
 
 import java.sql.*;
 

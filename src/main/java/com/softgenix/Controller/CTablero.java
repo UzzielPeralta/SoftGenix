@@ -1,5 +1,4 @@
 package com.softgenix.Controller;
 
-public class CMain {
-
+public class CTablero {
 }
