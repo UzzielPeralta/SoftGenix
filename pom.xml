@@ -95,7 +95,6 @@
                     <options>
                         <option>--add-opens=java.base/java.security=ALL-UNNAMED</option>
                         <option>--add-opens=java.base/java.security.cert=ALL-UNNAMED</option>
-                        <option>-Doracle.net.tns_admin=C:/Users/erick/Downloads/Wallet_Zendo</option>
                         <option>-Djava.library.path=C:/oracle/instantclient</option>
                     </options>
                 </configuration>
