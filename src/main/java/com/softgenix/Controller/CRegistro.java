@@ -1,8 +1,7 @@
 package com.softgenix.Controller;
 
-
 import com.softgenix.Application.App;
-import com.softgenix.Application.Database;
+import com.softgenix.Dao.Database;
 import com.softgenix.Utils.Path;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,54 +11,90 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class CRegistro {
-    // Este método ya lo tenías, para ir a la pantalla de sesión
     @FXML
     void InicioSesion(ActionEvent event) {
         App.app.setScene(Path.Sesion);
     }
-    //Campos FXML existentes
-    @FXML
-    private TextField emailField; //
 
     @FXML
-    private TextField lastNameField; //
+    private TextField emailField;
 
     @FXML
-    private TextField nameField; //
+    private TextField lastNameField;
 
     @FXML
-    private PasswordField passwordField; //
+    private TextField nameField;
 
     @FXML
-    private CheckBox termsCheckBox; //
+    private PasswordField passwordField;
+
+    @FXML
+    private CheckBox termsCheckBox;
+
+    @FXML
+    private CheckBox adminCheckBox;
 
     @FXML
     void registrarUsuario(ActionEvent event) {
-        // Obtener los datos de los campos de texto
         String name = nameField.getText();
         String lastName = lastNameField.getText();
         String email = emailField.getText();
         String password = passwordField.getText();
 
-        // Validaciones básicas
         if (name.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "Todos los campos son obligatorios.");
             return;
         }
 
 
-        //Llamar al metodo en DatabaseManager para añadir el usuario
-        boolean success = Database.addUser(name, lastName, email, password);
 
-        // Mostrar un mensaje al usuario
-        if (success) {
-            App.app.setScene(Path.Sesion);
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error en la Base de Datos", "No se pudo registrar el usuario. Es posible que el correo ya exista.");
-        }
+        String nombreUsuario = name + " " + lastName;
+        String rol = adminCheckBox.isSelected() ? "Administrador" : "Usuario";
+
+        // Obtener el botón que se hizo clic
+        javafx.scene.control.Button btn = (javafx.scene.control.Button)event.getSource();
+        btn.setDisable(true);
+        btn.setText("Conectando...");
+
+        javafx.concurrent.Task<Boolean> registroTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Boolean call() throws Exception {
+                try {
+                    return Database.addUser(nombreUsuario, email, password, rol);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw e;
+                }
+            }
+        };
+
+        registroTask.setOnSucceeded(e -> {
+            btn.setDisable(false);
+            btn.setText("Crear cuenta");
+
+            boolean success = registroTask.getValue();
+            if (success) {
+                App.app.setScene(Path.Sesion);
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error en la Base de Datos",
+                        "No se pudo registrar el usuario. Es posible que el correo ya exista.");
+            }
+        });
+
+        registroTask.setOnFailed(e -> {
+            btn.setDisable(false);
+            btn.setText("Crear cuenta");
+
+            Throwable ex = registroTask.getException();
+            ex.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error de Conexión",
+                    "No se pudo conectar a la base de datos: " + ex.getMessage());
+        });
+
+        new Thread(registroTask).start();
     }
 
-    // Metodo de ayuda para mostrar alertas
+
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
@@ -67,5 +102,4 @@ public class CRegistro {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
 }

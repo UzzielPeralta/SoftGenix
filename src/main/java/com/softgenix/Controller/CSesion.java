@@ -1,7 +1,7 @@
 package com.softgenix.Controller;
 
 import com.softgenix.Application.App;
-import com.softgenix.Application.Database;
+import com.softgenix.Dao.Database;
 import com.softgenix.Utils.Path;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
