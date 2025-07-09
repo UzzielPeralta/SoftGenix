@@ -1,4 +1,4 @@
-package com.softgenix.Application;
+package com.softgenix.Dao;
 
 import java.sql.*;
 import java.util.Properties;
@@ -6,9 +6,9 @@ import java.util.Properties;
 public class Database {
 
     private static final String URL = "jdbc:oracle:thin:@zendo_high";
-    private static final String USER = "";
-    private static final String PASSWORD = "";
-    private static final String WALLET_PATH = "";
+    private static final String USER = "ADMIN";
+    private static final String PASSWORD = "Zendo123****";
+    private static final String WALLET_PATH = "C:\\Users\\erick\\Downloads\\Wallet_Zendo";
 
     public static Connection getConnection() throws SQLException {
         System.setProperty("oracle.net.tns_admin", WALLET_PATH);
