@@ -36,8 +36,7 @@ public class App extends Application {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(fxmlLocation);
             Parent pane = fxmlLoader.load();
-            Scene scene = new Scene(pane);
-
+            Scene scene = new Scene(pane)
             // Determinar qué CSS cargar según la vista
             String cssPath;
             if (fxmlPath.contains("Sesion")) {
@@ -50,7 +49,7 @@ public class App extends Application {
                 cssPath = Path.LoginCss; // CSS por defecto
             }
 
-            URL cssUrl = getClass().getResource(cssPath);
+
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             } else {
