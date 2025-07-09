@@ -15,5 +15,4 @@ public class Path {
         public static final String RegistroCss = "/Styles/Registro.css";
         public static final String TableroCss = "/Styles/Tablero.css";
 
-
 }
