@@ -38,6 +38,8 @@ public class App extends Application {
             Parent pane = fxmlLoader.load(); // ← Cambiado a Parent
             Scene scene = new Scene(pane);
 
+            stageWindow.setResizable(false);
+
             URL cssUrl = getClass().getResource(Path.LoginCss);
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
