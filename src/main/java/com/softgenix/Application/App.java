@@ -35,16 +35,25 @@ public class App extends Application {
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(fxmlLocation);
-            Parent pane = fxmlLoader.load(); // ← Cambiado a Parent
-            Scene scene = new Scene(pane);
+            Parent pane = fxmlLoader.load();
+            Scene scene = new Scene(pane)
+            // Determinar qué CSS cargar según la vista
+            String cssPath;
+            if (fxmlPath.contains("Sesion")) {
+                cssPath = Path.LoginCss;
+            } else if (fxmlPath.contains("Registro")) {
+                cssPath = "/Styles/Registro.css";
+            } else if (fxmlPath.contains("Tablero")) {
+                cssPath = "/Styles/Tablero.css";
+            } else {
+                cssPath = Path.LoginCss; // CSS por defecto
+            }
 
-            stageWindow.setResizable(false);
 
-            URL cssUrl = getClass().getResource(Path.LoginCss);
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             } else {
-                System.err.println("No se encontró el archivo CSS en: " + Path.LoginCss);
+                System.err.println("No se encontró el archivo CSS en: " + cssPath);
             }
 
             stageWindow.setScene(scene);

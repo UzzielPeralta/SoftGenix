@@ -1,14 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="FXML.Tablero"
-            prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+<BorderPane xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.CTablero">
+    <top>
+        <HBox fx:id="header" alignment="CENTER_LEFT" spacing="30.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+            <children>
+                <Label text="𑁔" />
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="logo-text" text="Zendo" />
+                <TextField promptText=" Buscar" styleClass="search-field" HBox.hgrow="ALWAYS" />
+                <Button fx:id="createButton" mnemonicParsing="false" text="Crear" />
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER" spacing="15.0">
+                    <children>
+                        <Label text="🔔" />
+                        <Label styleClass="profile-icon" text="JR" />
+                    </children>
+                </HBox>
+            </children>
+        </HBox>
+    </top>
+    <center>
+        <SplitPane fx:id="splitPane" dividerPositions="0.25" styleClass="custom-split-pane" BorderPane.alignment="CENTER">
+            <items>
+                <VBox fx:id="inboxPanel" spacing="10.0">
+                    <padding>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                    </padding>
+                    <children>
+                        <Label styleClass="panel-title" text="☑ Inbox" />
+                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="add-card-button-clear" text="+ Añade una tarjeta" />
+                    </children>
+                </VBox>
+                <VBox styleClass="main-content">
+                    <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                    </padding>
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="20.0">
+                            <children>
+                                <Label styleClass="board-title" text="Mi tablero de Zendo ▼" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label styleClass="profile-icon-small" text="JR" />
+                                <Label text="✩" />
+                                <Button mnemonicParsing="false" styleClass="share-button" text="Compartir" />
+                            </children>
+                        </HBox>
+                        <ScrollPane fx:id="listsScrollPane" fitToHeight="true" VBox.vgrow="ALWAYS">
+                            <content>
+                                <HBox fx:id="listsContainer" spacing="15.0">
+                                    <padding>
+                                        <Insets bottom="10.0" top="10.0" />
+                                    </padding>
+                                    <children>
+                                        <VBox prefWidth="250.0" spacing="10.0" styleClass="list-view">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <children>
+                                                        <Label styleClass="list-title" text="Hoy" />
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label text="..." />
+                                                    </children>
+                                                </HBox>
+                                                <VBox styleClass="card, card-yellow">
+                                                    <children>
+                                                        <Label text="Empieza a usar Zendo" />
+                                                    </children>
+                                                </VBox>
+                                                <Button alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="add-card-button" text="+ Añade una tarjeta" />
+                                            </children>
+                                        </VBox>
+                                        <VBox prefWidth="250.0" spacing="10.0" styleClass="list-view">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <children>
+                                                        <Label styleClass="list-title" text="Esta semana" />
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label text="..." />
+                                                    </children>
+                                                </HBox>
+                                                <VBox styleClass="card, add-card-placeholder">
+                                                    <children>
+                                                        <Label text="+ Añade una tarjeta" />
+                                                    </children>
+                                                </VBox>
+                                                <Button alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="add-card-button" text="+ Añade una tarjeta" />
+                                            </children>
+                                        </VBox>
+                                        <VBox prefWidth="250.0" spacing="5.0" styleClass="list-view">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <children>
+                                                        <Label styleClass="list-title" text="Más tarde" />
+                                                        <Region HBox.hgrow="ALWAYS" />
+                                                        <Label text="..." />
+                                                    </children>
+                                                </HBox>
+                                                <VBox styleClass="card">
+                                                    <VBox alignment="CENTER" prefHeight="100.0" style="-fx-background-color: #e0e0e0; -fx-background-radius: 8 8 0 0;">
+                                                        <Label text="Hutzz" style="-fx-font-weight: bold; -fx-font-size: 20px;" />
+                                                    </VBox>
+                                                    <VBox style="-fx-padding: 10;">
+                                                        <Label text="Entrega del S2" />
+                                                    </VBox>
+                                                </VBox>
+                                                <Button alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="add-card-button" text="+ Añade una tarjeta" />
+                                            </children>
+                                        </VBox>
+                                        <VBox prefWidth="250.0" spacing="10.0" styleClass="list-view">
+                                            <children>
+                                                <Label styleClass="list-title" text="+ Añade otra lista" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+</BorderPane>
