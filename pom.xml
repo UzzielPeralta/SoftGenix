@@ -91,7 +91,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.softgenix.Application.App</mainClass>
+                    <mainClass>com.softgenix.App.App</mainClass>
                     <options>
                         <option>--add-opens=java.base/java.security=ALL-UNNAMED</option>
                         <option>--add-opens=java.base/java.security.cert=ALL-UNNAMED</option>
