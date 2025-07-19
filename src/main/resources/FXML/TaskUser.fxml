@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Text?>
+
+<?import javafx.scene.control.Separator?>
+<AnchorPane fx:controller="com.softgenix.Controller.UserController" prefHeight="720.0" prefWidth="1280.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <HBox alignment="CENTER_LEFT" prefHeight="70.0" styleClass="header-bar" stylesheets="@/Styles/Dashboard.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <Label fx:id="headerTitleLabel" styleClass="header-title" text="Mi tablero de Zendo" />
+                        <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10h1v-2h-1c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8v1.5c0 .83-.67 1.5-1.5 1.5h-3c-.83 0-1.5-.67-1.5-1.5V12h-2v1.5c0 1.93 1.57 3.5 3.5 3.5h3c1.93 0 3.5-1.57 3.5-3.5V12c0-5.52-4.48-10-10-10z" styleClass="header-icon" />
+                        <SVGPath content="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" styleClass="header-icon" />
+                        <SVGPath content="M7 10l5 5 5-5z" styleClass="header-icon" />
+                    </children>
+                </HBox>
+                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Button mnemonicParsing="false" styleClass="logout-button" text="Cerrar sesión" onAction="#cerrarSesion" />
+                        <StackPane prefHeight="40.0" prefWidth="40.0">
+                            <children>
+                                <Circle radius="20.0" styleClass="user-circle" />
+                                <Text fx:id="userInitialsText" styleClass="user-initials" text="JR" />
+                            </children>
+                            <HBox.margin>
+                                <Insets left="20.0" />
+                            </HBox.margin>
+                        </StackPane>
+                    </children>
+                </HBox>
+            </children>
+            <padding>
+                <Insets left="30.0" right="30.0" />
+            </padding>
+        </HBox>
+
+        <HBox spacing="20.0" alignment="CENTER" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="100.0">
+            <children>
+                <VBox fx:id="enProcesoColumn" spacing="15.0" styleClass="kanban-column" alignment="TOP_CENTER">
+                    <children>
+                        <Label styleClass="column-title" text="En Proceso" />
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" top="10.0" />
+                    </padding>
+                </VBox>
+
+                <Separator orientation="VERTICAL" styleClass="kanban-separator" prefWidth="2.0" />
+
+                <VBox fx:id="completadaColumn" spacing="15.0" styleClass="kanban-column" alignment="TOP_CENTER">
+                    <children>
+                        <Label styleClass="column-title" text="Completada" />
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" top="10.0"/>
+                    </padding>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</AnchorPane>

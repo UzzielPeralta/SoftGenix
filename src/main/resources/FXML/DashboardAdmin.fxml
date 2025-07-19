@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0"
+            prefWidth="1280.0" style="-fx-background-color: #f0f2f5;" xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml" fx:controller="com.softgenix.Controller.AdminController">
+    <children>
+        <!-- Barra lateral izquierda -->
+        <VBox alignment="TOP_CENTER" prefHeight="720.0" prefWidth="280.0" spacing="20.0" styleClass="left-pane"
+              stylesheets="@/Styles/Dashboard.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- Logo y botones de navegación -->
+                <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="12.0">
+                    <children>
+                        <ImageView fitHeight="52.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/Zendo_loto.png" />
+                            </image>
+                        </ImageView>
+                        <Label styleClass="logo-text" text="Zendo" />
+                    </children>
+                </HBox>
+                <Button fx:id="crearTableroBtn" onAction="#mostrarGestionTableros" mnemonicParsing="false"
+                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear tablero" />
+                <Button fx:id="crearUserBtn" onAction="#mostrarGestionUsuarios" mnemonicParsing="false"
+                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear Usuario" />
+                <Button fx:id="asignarTablerosBtn" onAction="#mostrarPanelAsignacion" mnemonicParsing="false"
+                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button"
+                        text="≡ Asignar Tableros" />
+            </children>
+            <padding>
+                <Insets left="20.0" right="20.0" top="20.0" />
+            </padding>
+        </VBox>
+
+        <!-- Área principal de contenido -->
+        <AnchorPane layoutX="280.0" prefHeight="720.0" prefWidth="1000.0" style="-fx-background-color: white;"
+                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="280.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <!-- Barra superior con título y botón de cerrar sesión -->
+                <HBox alignment="CENTER_LEFT" prefHeight="70.0" prefWidth="1000.0" styleClass="header-bar"
+                      stylesheets="@/Styles/Dashboard.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <Label fx:id="headerTitleLabel" styleClass="header-title" text="Inicio Zendo" />
+                        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Button mnemonicParsing="false" styleClass="logout-button" text="Cerrar sesión" onAction="#cerrarSesion" />
+                                <StackPane prefHeight="40.0" prefWidth="40.0" />
+                            </children>
+                        </HBox>
+                    </children>
+                    <padding>
+                        <Insets left="30.0" right="30.0" />
+                    </padding>
+                </HBox>
+
+                <!-- Panel de bienvenida -->
+                <VBox fx:id="welcomePanel" alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                    <children>
+                        <ImageView fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@../images/Zendo_loto.png" />
+                            </image>
+                        </ImageView>
+                        <Label style="-fx-font-size: 24; -fx-font-weight: bold;" text="Bienvenido a Zendo" />
+                        <Label style="-fx-font-size: 16;" text="Selecciona una opción del menú lateral para comenzar" />
+                    </children>
+                </VBox>
+
+                <!-- Panel de gestión de usuarios -->
+                <AnchorPane fx:id="usuariosPanel" visible="false" stylesheets="@/Styles/Dashboard.css"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                    <children>
+                        <SplitPane dividerPositions="0.4" styleClass="split-pane" prefHeight="650.0" prefWidth="1000.0"
+                                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <items>
+                                <!-- Panel izquierdo - Formulario de creación -->
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0"
+                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                            <children>
+                                                <Label styleClass="form-title" text="Crear nuevo usuario" />
+                                                <Label text="Nombre:" styleClass="form-label" />
+                                                <TextField fx:id="nombreField" promptText="Nombre completo" styleClass="form-field" />
+                                                <Label text="Email:" styleClass="form-label" />
+                                                <TextField fx:id="emailField" promptText="correo@ejemplo.com" styleClass="form-field" />
+                                                <Label text="Contraseña:" styleClass="form-label" />
+                                                <PasswordField fx:id="passwordField" promptText="Contraseña" styleClass="form-field" />
+                                                <Button mnemonicParsing="false" onAction="#crearUsuario" prefHeight="35.0" prefWidth="150.0"
+                                                        styleClass="create-user-button" text="Crear Usuario" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                            </padding>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+
+                                <!-- Panel derecho - Tabla de usuarios -->
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0"
+                                              AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+                                            <children>
+                                                <TableView fx:id="usuariosTableView" VBox.vgrow="ALWAYS">
+                                                    <columns>
+                                                        <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
+                                                        <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
+                                                        <TableColumn fx:id="emailColumn" prefWidth="230.0" text="Email" />
+                                                        <TableColumn fx:id="rolColumn" prefWidth="100.0" text="Rol" />
+                                                    </columns>
+                                                </TableView>
+                                                <HBox alignment="CENTER_RIGHT">
+                                                    <children>
+                                                        <Button mnemonicParsing="false" onAction="#eliminarUsuario"
+                                                                prefHeight="35.0" prefWidth="150.0"
+                                                                styleClass="logout-button" text="Eliminar Usuario" />
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </items>
+                        </SplitPane>
+                    </children>
+                </AnchorPane>
+
+
+                <!-- Panel de tableros - inicialmente oculto -->
+
+                <AnchorPane fx:id="tablerosPanel" visible="false" stylesheets="@/Styles/Dashboard.css"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                    <children>
+                        <SplitPane dividerPositions="0.4" styleClass="split-pane" prefHeight="650.0" prefWidth="1000.0"
+                                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <items>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0"
+                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                            <children>
+                                                <Label styleClass="form-title" text="Crear nuevo tablero" />
+                                                <Label text="Nombre del tablero:" styleClass="form-label" />
+                                                <TextField fx:id="tableroNombreField" promptText="Nombre del tablero"
+                                                           styleClass="form-field" />
+                                                <Label text="Descripción:" styleClass="form-label" />
+                                                <TextArea fx:id="tableroDescripcionField" promptText="Descripción del tablero"
+                                                          styleClass="form-field" prefHeight="100.0" wrapText="true" />
+                                                <Button mnemonicParsing="false" onAction="#crearTablero"
+                                                        prefHeight="35.0" prefWidth="150.0"
+                                                        styleClass="create-user-button" text="Crear Tablero">
+                                                </Button>
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                            </padding>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
+                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                            <children>
+                                                <Label styleClass="form-title" text="Mis tableros" />
+                                                <TableView fx:id="tablerosTableView" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                                                    <columns>
+                                                        <TableColumn fx:id="tableroIdColumn" prefWidth="50.0" text="ID" />
+                                                        <TableColumn fx:id="tableroNombreColumn" prefWidth="120.0" text="Nombre" />
+                                                        <TableColumn fx:id="tableroDescripcionColumn" prefWidth="300.0" text="Descripción" />
+                                                    </columns>
+                                                </TableView>
+                                                <HBox spacing="10.0">
+                                                    <children>
+                                                        <Button mnemonicParsing="false" onAction="#gestionarTarjetasTablero"
+                                                                prefHeight="35.0" prefWidth="150.0"
+                                                                styleClass="create-user-button" text="Gestionar Tarjetas">
+                                                        </Button>
+                                                        <Button mnemonicParsing="false" onAction="#eliminarTablero"
+                                                                prefHeight="35.0" prefWidth="150.0"
+                                                                styleClass="logout-button" text="Eliminar Tablero">
+                                                        </Button>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </items>
+                        </SplitPane>
+                    </children>
+                </AnchorPane>
+
+                <AnchorPane fx:id="tarjetasPanel" visible="false" stylesheets="@/Styles/Dashboard.css"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                    <children>
+                        <Label fx:id="tableroActualLabel" styleClass="header-title" text="Seleccione un tablero" />
+                        <VBox spacing="20.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0"
+                              AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+                            <children>
+                                <!-- Formulario para crear tarjetas -->
+                                <VBox spacing="10.0" styleClass="form-container">
+                                    <children>
+                                        <Label styleClass="form-title" text="Nueva Tarjeta" />
+                                        <Label styleClass="form-label" text="Título:" />
+                                        <TextField fx:id="tarjetaTituloField" styleClass="form-field" promptText="Título de la tarjeta" />
+                                        <Label styleClass="form-label" text="Descripción:" />
+                                        <TextArea fx:id="tarjetaDescripcionField" styleClass="form-field"
+                                                  prefHeight="80.0" promptText="Descripción de la tarjeta" />
+                                        <Button mnemonicParsing="false" onAction="#crearTarjeta"
+                                                prefHeight="35.0" prefWidth="200.0"
+                                                styleClass="create-user-button" text="Crear Tarjeta" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                    </padding>
+                                </VBox>
+
+                                <!-- Tabla de tarjetas existentes -->
+                                <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+                                    <children>
+                                        <Label styleClass="form-title" text="Tarjetas del tablero" />
+                                        <TableView fx:id="tarjetasTableView" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="tarjetaTituloColumn" prefWidth="200.0" text="Título" />
+                                                <TableColumn fx:id="tarjetaDescripcionColumn" prefWidth="400.0" text="Descripción" />
+                                            </columns>
+                                        </TableView>
+                                        <Button mnemonicParsing="false" onAction="#eliminarTarjeta"
+                                                prefHeight="35.0" prefWidth="200.0"
+                                                styleClass="logout-button" text="Eliminar Tarjeta" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </AnchorPane>
+                <!-- Panel de asignación de tableros -->
+                <AnchorPane fx:id="asignacionPanel" visible="false" stylesheets="@/Styles/Dashboard.css"
+                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                    <children>
+                        <SplitPane dividerPositions="0.4" styleClass="split-pane" prefHeight="650.0" prefWidth="1000.0"
+                                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <items>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <!-- Panel de asignación de tableros -->
+                                        <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0"
+                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                            <children>
+                                                <Label styleClass="form-title" text="Asignar tablero a usuario" />
+                                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                                    <children>
+                                                        <Label text="Seleccionar tablero:" styleClass="form-label" />
+                                                        <ComboBox fx:id="tablerosComboBox" onAction="#actualizarUsuariosAsignados"
+                                                                  prefWidth="250.0" styleClass="form-field" />
+                                                    </children>
+                                                </HBox>
+                                                <Label text="Usuarios disponibles:" styleClass="form-label" />
+                                                <TableView fx:id="usuariosDisponiblesTable" prefHeight="200.0">
+                                                    <columns>
+                                                        <TableColumn fx:id="idUsuarioColumn" prefWidth="50.0" text="ID" />
+                                                        <TableColumn fx:id="nombreUsuarioColumn" prefWidth="120.0" text="Nombre" />
+                                                        <TableColumn fx:id="emailUsuarioColumn" prefWidth="200.0" text="Email" />
+                                                    </columns>
+                                                </TableView>
+                                                <Button mnemonicParsing="false" onAction="#asignarTableroAUsuario"
+                                                        prefHeight="35.0" prefWidth="150.0"
+                                                        styleClass="create-user-button" text="Asignar Tablero">
+                                                </Button>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
+                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                            <children>
+                                                <Label styleClass="form-title" text="Usuarios con tablero asignado" />
+                                                <TableView fx:id="usuariosAsignadosTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                                                    <columns>
+                                                        <TableColumn fx:id="idAsignadoColumn" prefWidth="50.0" text="ID" />
+                                                        <TableColumn fx:id="nombreAsignadoColumn" prefWidth="120.0" text="Nombre" />
+                                                        <TableColumn fx:id="emailAsignadoColumn" prefWidth="300.0" text="Email" />
+                                                    </columns>
+                                                </TableView>
+                                                <Button mnemonicParsing="false" onAction="#desasignarTableroDeUsuario"
+                                                        prefHeight="35.0" prefWidth="150.0"
+                                                        styleClass="logout-button" text="Quitar Asignación">
+                                                </Button>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </AnchorPane>
+                            </items>
+                        </SplitPane>
+                    </children>
+                </AnchorPane>
+            </children>
+        </AnchorPane>
+    </children>
+</AnchorPane>
