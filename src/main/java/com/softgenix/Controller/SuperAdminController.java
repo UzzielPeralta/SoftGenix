@@ -71,7 +71,7 @@ public class SuperAdminController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Configurar ComboBox de roles
-        rolComboBox.setItems(FXCollections.observableArrayList("ADMIN", "USER"));
+        rolComboBox.setItems(FXCollections.observableArrayList("ADMIN"));
 
         // Configurar columnas de la tabla
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -90,7 +90,7 @@ public class SuperAdminController implements Initializable {
         usuariosPanel.setVisible(true);
 
         // Cambiar título del header
-        headerTitleLabel.setText("Gestión de Usuarios");
+        headerTitleLabel.setText("Gestión de Admin");
 
         // Cargar usuarios
         cargarUsuarios();
@@ -123,11 +123,11 @@ public class SuperAdminController implements Initializable {
 
         boolean creado = UserService.crearUsuario(email, password, nombre, rol);
         if (creado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Usuario creado correctamente");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin creado correctamente");
             limpiarFormulario();
             cargarUsuarios();
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el usuario");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el admin");
         }
     }
 
@@ -135,16 +135,16 @@ public class SuperAdminController implements Initializable {
     private void eliminarUsuario(ActionEvent event) {
         User usuarioSeleccionado = usuariosTableView.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un usuario para eliminar");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un admin para eliminar");
             return;
         }
 
         boolean eliminado = UserService.eliminarUsuario(usuarioSeleccionado.getId());
         if (eliminado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Usuario eliminado correctamente");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin eliminado correctamente");
             cargarUsuarios();
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el usuario");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el admin");
         }
     }
 

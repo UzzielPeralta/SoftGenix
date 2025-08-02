@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0"
-            prefWidth="1280.0" style="-fx-background-color: #f0f2f5;" xmlns="http://javafx.com/javafx/23.0.1"
-            xmlns:fx="http://javafx.com/fxml" fx:controller="com.softgenix.Controller.SuperAdminController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" style="-fx-background-color: #f0f2f5;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.SuperAdminController">
     <children>
         <VBox alignment="TOP_CENTER" prefHeight="720.0" prefWidth="280.0" spacing="20.0" styleClass="left-pane" stylesheets="@/Styles/Dashboard.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -24,9 +32,8 @@
                         <Label styleClass="logo-text" text="Zendo" />
                     </children>
                 </HBox>
-                <Button fx:id="crearTableroBtn" onAction="#mostrarGestionTableros" mnemonicParsing="false" prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear tablero" />
-                <Button fx:id="crearAdminBtn" onAction="#mostrarGestionUsuarios" mnemonicParsing="false" prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear Admin" />
-                <Button mnemonicParsing="false" prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="– Elimina una tarjeta" />
+                <Button fx:id="crearTableroBtn" mnemonicParsing="false" onAction="#mostrarGestionTableros" prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear tablero" />
+                <Button fx:id="crearAdminBtn" mnemonicParsing="false" onAction="#mostrarGestionUsuarios" prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear Admin" />
             </children>
             <padding>
                 <Insets left="20.0" right="20.0" top="20.0" />
@@ -39,7 +46,7 @@
                         <Label fx:id="headerTitleLabel" styleClass="header-title" text="Inicio Zendo" />
                         <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                             <children>
-                                <Button mnemonicParsing="false" styleClass="logout-button" text="Cerrar sesión" onAction="#cerrarSesion" />
+                                <Button mnemonicParsing="false" onAction="#cerrarSesion" styleClass="logout-button" text="Cerrar sesión" />
                                 <StackPane prefHeight="40.0" prefWidth="40.0">
                                     <children>
                                         <Circle radius="20.0" styleClass="user-circle" />
@@ -58,8 +65,7 @@
                 </HBox>
 
                 <!-- Panel de bienvenida que se muestra al inicio -->
-                <VBox fx:id="welcomePanel" alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0"
-                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                <VBox fx:id="welcomePanel" alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
                     <children>
                         <ImageView fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
                             <image>
@@ -73,20 +79,15 @@
 
 
                 <!-- Panel de gestión de usuarios - inicialmente oculto -->
-                <AnchorPane fx:id="usuariosPanel" visible="false" stylesheets="@/Styles/Dashboard.css"
-                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                <AnchorPane fx:id="usuariosPanel" stylesheets="@/Styles/Dashboard.css" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
                     <children>
-                        <SplitPane dividerPositions="0.4" styleClass="split-pane" prefHeight="650.0" prefWidth="1000.0"
-                                   AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <SplitPane dividerPositions="0.4" prefHeight="650.0" prefWidth="1000.0" styleClass="split-pane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <items>
                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                                     <children>
-                                        <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0"
-                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                        <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                                             <children>
-                                                <Label styleClass="form-title" text="Crear nuevo usuario" />
+                                                <Label styleClass="form-title" text="Crear nuevo admin" />
                                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                                                     <children>
                                                         <Label prefWidth="80.0" text="Nombre:" />
@@ -108,12 +109,10 @@
                                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                                                     <children>
                                                         <Label prefWidth="80.0" text="Rol:" />
-                                                        <ComboBox fx:id="rolComboBox" styleClass="form-field" prefWidth="150.0" />
+                                                        <ComboBox fx:id="rolComboBox" prefWidth="150.0" styleClass="form-field" />
                                                     </children>
                                                 </HBox>
-                                                <Button mnemonicParsing="false" onAction="#crearUsuario"
-                                                        prefHeight="35.0" prefWidth="120.0"
-                                                        styleClass="create-user-button" text="Crear Usuario">
+                                                <Button mnemonicParsing="false" onAction="#crearUsuario" prefHeight="35.0" prefWidth="120.0" styleClass="create-user-button" text="Crear Admin">
                                                     <VBox.margin>
                                                         <Insets top="10.0" />
                                                     </VBox.margin>
@@ -124,21 +123,17 @@
                                 </AnchorPane>
                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                                     <children>
-                                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
-                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+                                        <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                                             <children>
                                                 <HBox alignment="CENTER_RIGHT" spacing="10.0">
                                                     <children>
-                                                        <Button mnemonicParsing="false" onAction="#eliminarUsuario"
-                                                                prefHeight="35.0" prefWidth="150.0"
-                                                                styleClass="logout-button" text="Eliminar Usuario" />
+                                                        <Button mnemonicParsing="false" onAction="#eliminarUsuario" prefHeight="35.0" prefWidth="150.0" styleClass="logout-button" text="Eliminar Admin" />
                                                     </children>
                                                     <padding>
                                                         <Insets top="10.0" />
                                                     </padding>
                                                 </HBox>
-                                                <TableView fx:id="usuariosTableView" styleClass="users-table"
-                                                           prefHeight="550.0" prefWidth="580.0" VBox.vgrow="ALWAYS">
+                                                <TableView fx:id="usuariosTableView" prefHeight="550.0" prefWidth="580.0" styleClass="users-table" VBox.vgrow="ALWAYS">
                                                     <columns>
                                                         <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
                                                         <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
@@ -156,13 +151,9 @@
                 </AnchorPane>
 
                 <!-- Panel de tableros - inicialmente oculto -->
-                <AnchorPane fx:id="tablerosPanel" visible="false" stylesheets="@/Styles/Dashboard.css"
-                            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
+                <AnchorPane fx:id="tablerosPanel" stylesheets="@/Styles/Dashboard.css" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="70.0">
                     <children>
-                        <Button fx:id="addListBtn" layoutX="40.0" layoutY="30.0" mnemonicParsing="false"
-                                prefHeight="40.0" prefWidth="250.0" styleClass="add-list-button"
-                                text="+ Añadir tarjeta" />
+                        <Button fx:id="addListBtn" layoutX="40.0" layoutY="30.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="250.0" styleClass="add-list-button" text="+ Añadir tarjeta" />
                     </children>
                 </AnchorPane>
             </children>
