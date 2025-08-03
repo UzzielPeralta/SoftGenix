@@ -26,70 +26,34 @@ import java.util.ResourceBundle;
 
 public class AdminController implements Initializable {
 
-    @FXML
-    private TextField emailField;
-
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private TextField nombreField;
-
-    @FXML
-    private TableView<User> usuariosTableView;
-
-    @FXML
-    private TableColumn<User, Integer> idColumn;
-
-    @FXML
-    private TableColumn<User, String> nombreColumn;
-
-    @FXML
-    private TableColumn<User, String> emailColumn;
-
-    @FXML
-    private TableColumn<User, String> rolColumn;
-
-    @FXML
-    private VBox welcomePanel;
-
-    @FXML
-    private AnchorPane usuariosPanel;
-
-    @FXML
-    private AnchorPane tablerosPanel;
-
-    @FXML
-    private Label headerTitleLabel;
-
-    @FXML
-    private Button addListBtn;
+    @FXML private TableView<User> usuariosTableView;
+    @FXML private TableColumn<User, Integer> idColumn;
+    @FXML private TableColumn<User, String> nombreColumn;
+    @FXML private TableColumn<User, String> emailColumn;
+    @FXML private TableColumn<User, String> rolColumn;
+    @FXML private VBox welcomePanel;
+    @FXML private AnchorPane usuariosPanel;
+    @FXML private AnchorPane tablerosPanel;
+    @FXML private Label headerTitleLabel;
+    @FXML private Button addListBtn;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Configurar columnas de la tabla
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         rolColumn.setCellValueFactory(new PropertyValueFactory<>("rol"));
     }
 
-    /**
-     * Método para ocultar todos los paneles
-     */
     private void ocultarTodosPaneles() {
         welcomePanel.setVisible(false);
         welcomePanel.setManaged(false);
-
         usuariosPanel.setVisible(false);
         usuariosPanel.setManaged(false);
-
         tablerosPanel.setVisible(false);
         tablerosPanel.setManaged(false);
-
         tarjetasPanel.setVisible(false);
         tarjetasPanel.setManaged(false);
-
         asignacionPanel.setVisible(false);
         asignacionPanel.setManaged(false);
     }
@@ -113,8 +77,6 @@ public class AdminController implements Initializable {
         headerTitleLabel.setText("Asignación de Tableros");
         asignacionPanel.setVisible(true);
         asignacionPanel.setManaged(true);
-
-        // Cargar los datos necesarios
         cargarTablerosAdmin();
         cargarUsuariosDisponibles();
     }
@@ -128,14 +90,16 @@ public class AdminController implements Initializable {
 
     @FXML
     private void volverATableros() {
-        ocultarTodosPaneles(); // Oculta *todos* los paneles, incluyendo tarjetasPanel
-
+        ocultarTodosPaneles();
         tablerosPanel.setVisible(true);
         tablerosPanel.setManaged(true);
-
         headerTitleLabel.setText("Gestión de Tableros");
         cargarTableros();
     }
+
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private TextField nombreField;
 
     @FXML
     private void crearUsuario(ActionEvent event) {
@@ -177,7 +141,6 @@ public class AdminController implements Initializable {
             return;
         }
 
-        // Solo permitir eliminar usuarios tipo USER
         if (!"USER".equals(usuarioSeleccionado.getRol())) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "Solo puede eliminar usuarios con rol USER");
             return;
@@ -199,7 +162,6 @@ public class AdminController implements Initializable {
     }
 
     private void cargarUsuarios() {
-        // Solo cargar usuarios tipo USER
         List<User> usuarios = UserService.obtenerUsuariosPorRol("USER");
         usuariosTableView.setItems(FXCollections.observableArrayList(usuarios));
     }
@@ -217,7 +179,7 @@ public class AdminController implements Initializable {
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
-    // Elementos UI para asignación de tableros
+
     @FXML private AnchorPane asignacionPanel;
     @FXML private ComboBox<String> tablerosComboBox;
     @FXML private TableView<User> usuariosDisponiblesTable;
@@ -228,10 +190,7 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<User, Integer> idAsignadoColumn;
     @FXML private TableColumn<User, String> nombreAsignadoColumn;
     @FXML private TableColumn<User, String> emailAsignadoColumn;
-
-    // Botón en sidebar para mostrar el panel de asignación
-    @FXML
-    private Button asignarTablerosBtn;
+    @FXML private Button asignarTablerosBtn;
 
     private void cargarTablerosAdmin() {
         List<Board> tableros = BoardService.obtenerTablerosUsuario();
@@ -247,18 +206,13 @@ public class AdminController implements Initializable {
         }
     }
 
-    /**
-     * Carga los usuarios con rol USER
-     */
     private void cargarUsuariosDisponibles() {
         List<User> usuarios = UserService.obtenerUsuariosPorRol("USER");
 
-        // Configurar columnas de la tabla
         idUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         emailUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        // Configurar columnas de la tabla de asignados
         idAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         emailAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
@@ -267,9 +221,6 @@ public class AdminController implements Initializable {
         usuariosDisponiblesTable.getItems().addAll(usuarios);
     }
 
-    /**
-     * Actualiza la lista de usuarios asignados al tablero seleccionado
-     */
     @FXML
     private void actualizarUsuariosAsignados() {
         String seleccion = tablerosComboBox.getValue();
@@ -282,9 +233,6 @@ public class AdminController implements Initializable {
         usuariosAsignadosTable.getItems().addAll(usuariosAsignados);
     }
 
-    /**
-     * Asigna un tablero al usuario seleccionado
-     */
     @FXML
     private void asignarTableroAUsuario() {
         String seleccion = tablerosComboBox.getValue();
@@ -308,9 +256,6 @@ public class AdminController implements Initializable {
         }
     }
 
-    /**
-     * Desasigna un tablero del usuario seleccionado
-     */
     @FXML
     private void desasignarTableroDeUsuario() {
         String seleccion = tablerosComboBox.getValue();
@@ -333,9 +278,7 @@ public class AdminController implements Initializable {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar la asignación");
         }
     }
-    // Elementos UI para tableros
-    @FXML private TextField tableroNombreField;
-    @FXML private TextArea tableroDescripcionField;
+
     @FXML private TableView<Board> tablerosTableView;
     @FXML private TableColumn<Board, Integer> tableroIdColumn;
     @FXML private TableColumn<Board, String> tableroNombreColumn;
@@ -343,76 +286,25 @@ public class AdminController implements Initializable {
 
     @FXML
     private void mostrarGestionTableros(ActionEvent event) {
-        // Usar el método que oculta correctamente todos los paneles
         ocultarTodosPaneles();
-
-        // Mostrar panel de tableros
         tablerosPanel.setVisible(true);
         tablerosPanel.setManaged(true);
-
-        // Cambiar título
         headerTitleLabel.setText("Gestión de Tableros");
 
-        // Configurar columnas si no se ha hecho antes
         if (tableroIdColumn.getCellValueFactory() == null) {
             tableroIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
             tableroNombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
             tableroDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
         }
 
-        // Cargar tableros existentes
         cargarTableros();
     }
+
     private void cargarTableros() {
         List<Board> tableros = BoardService.obtenerTablerosUsuario();
         tablerosTableView.setItems(FXCollections.observableArrayList(tableros));
     }
 
-    /**
-     * Crea un nuevo tablero
-     */
-    @FXML
-    private void crearTablero() {
-        String nombre = tableroNombreField.getText();
-        String descripcion = tableroDescripcionField.getText();
-
-        if (nombre.isEmpty()) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "El nombre del tablero es obligatorio");
-            return;
-        }
-
-        boolean creado = BoardService.crearTablero(nombre, descripcion);
-
-        if (creado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero creado correctamente");
-            tableroNombreField.clear();
-            tableroDescripcionField.clear();
-            cargarTableros();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el tablero");
-        }
-    }
-
-    /**
-     * Elimina el tablero seleccionado
-     */
-    @FXML
-    private void eliminarTablero() {
-        Board tableroSeleccionado = tablerosTableView.getSelectionModel().getSelectedItem();
-        if (tableroSeleccionado == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un tablero para eliminar");
-            return;
-        }
-
-        boolean eliminado = BoardService.eliminarTablero(tableroSeleccionado.getId());
-        if (eliminado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero eliminado correctamente");
-            cargarTableros();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el tablero");
-        }
-    }
-    // Variables para el panel de tarjetas
     @FXML private AnchorPane tarjetasPanel;
     @FXML private Label tableroActualLabel;
     @FXML private TextField tarjetaTituloField;
@@ -421,58 +313,51 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<Card, String> tarjetaTituloColumn;
     @FXML private TableColumn<Card, String> tarjetaDescripcionColumn;
 
-    // Tablero seleccionado actualmente
     private Board tableroActual;
 
-    /**
-     * Muestra el panel de gestión de tarjetas para el tablero seleccionado
-     */
     @FXML
     private void gestionarTarjetasTablero() {
-        // Obtener el tablero seleccionado
         tableroActual = tablerosTableView.getSelectionModel().getSelectedItem();
-
         if (tableroActual == null) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un tablero para gestionar sus tarjetas");
             return;
         }
 
-        // Ocultar panel de tableros pero mantener la barra superior
         tablerosPanel.setVisible(false);
         tablerosPanel.setManaged(false);
-
-        // Configurar panel de tarjetas
         tableroActualLabel.setText("Mi tablero de " + tableroActual.getNombre());
-
-        // Configurar columnas de la tabla
         tarjetaTituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
         tarjetaDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
-
-        // Cargar tarjetas existentes
         cargarTarjetasTablero();
-
-        // Mostrar panel de tarjetas
         tarjetasPanel.setVisible(true);
         tarjetasPanel.setManaged(true);
     }
 
-    /**
-     * Carga las tarjetas del tablero actual
-     */
     private void cargarTarjetasTablero() {
         if (tableroActual == null) return;
-
         List<Card> tarjetas = CardDAO.obtenerTarjetasPorTablero(tableroActual.getId());
         tarjetasTableView.setItems(FXCollections.observableArrayList(tarjetas));
     }
 
-    /**
-     * Crea una nueva tarjeta en el tablero actual
-     */
+    private int obtenerColumnaPreterminada(int tableroId) {
+        List<Column> columnas = BoardDAO.obtenerColumnasPorTablero(tableroId);
+        if (!columnas.isEmpty()) {
+            return columnas.get(0).getId();
+        }
+
+        boolean creado = BoardService.crearColumna(tableroId, "Por hacer");
+        if (creado) {
+            columnas = BoardDAO.obtenerColumnasPorTablero(tableroId);
+            if (!columnas.isEmpty()) {
+                return columnas.get(0).getId();
+            }
+        }
+        return -1;
+    }
+
     @FXML
     private void crearTarjeta() {
         if (tableroActual == null) return;
-
         String titulo = tarjetaTituloField.getText();
         String descripcion = tarjetaDescripcionField.getText();
 
@@ -481,7 +366,6 @@ public class AdminController implements Initializable {
             return;
         }
 
-        // Obtener o crear una columna predeterminada
         int columnaId = obtenerColumnaPreterminada(tableroActual.getId());
         if (columnaId == -1) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear una columna para la tarjeta");
@@ -506,30 +390,6 @@ public class AdminController implements Initializable {
         }
     }
 
-    /**
-     * Obtiene una columna predeterminada o la crea si no existe
-     */
-    private int obtenerColumnaPreterminada(int tableroId) {
-        List<Column> columnas = BoardDAO.obtenerColumnasPorTablero(tableroId);
-        if (!columnas.isEmpty()) {
-            return columnas.get(0).getId();
-        }
-
-        // Si no hay columnas, crear una columna predeterminada
-        boolean creado = BoardService.crearColumna(tableroId, "Por hacer");
-        if (creado) {
-            columnas = BoardDAO.obtenerColumnasPorTablero(tableroId);
-            if (!columnas.isEmpty()) {
-                return columnas.get(0).getId();
-            }
-        }
-
-        return -1; // Error
-    }
-
-    /**
-     * Elimina la tarjeta seleccionada
-     */
     @FXML
     private void eliminarTarjeta() {
         Card tarjetaSeleccionada = tarjetasTableView.getSelectionModel().getSelectedItem();
@@ -546,7 +406,4 @@ public class AdminController implements Initializable {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar la tarjeta");
         }
     }
-
-
-
 }

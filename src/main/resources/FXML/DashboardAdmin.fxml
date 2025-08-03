@@ -147,29 +147,7 @@
                                    AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                    AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                             <items>
-                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                                    <children>
-                                        <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0"
-                                              AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
-                                            <children>
-                                                <Label styleClass="form-title" text="Crear nuevo tablero" />
-                                                <Label text="Nombre del tablero:" styleClass="form-label" />
-                                                <TextField fx:id="tableroNombreField" promptText="Nombre del tablero"
-                                                           styleClass="form-field" />
-                                                <Label text="Descripción:" styleClass="form-label" />
-                                                <TextArea fx:id="tableroDescripcionField" promptText="Descripción del tablero"
-                                                          styleClass="form-field" prefHeight="100.0" wrapText="true" />
-                                                <Button mnemonicParsing="false" onAction="#crearTablero"
-                                                        prefHeight="35.0" prefWidth="150.0"
-                                                        styleClass="create-user-button" text="Crear Tablero">
-                                                </Button>
-                                            </children>
-                                            <padding>
-                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-                                            </padding>
-                                        </VBox>
-                                    </children>
-                                </AnchorPane>
+
                                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                                     <children>
                                         <VBox spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
@@ -188,10 +166,6 @@
                                                         <Button mnemonicParsing="false" onAction="#gestionarTarjetasTablero"
                                                                 prefHeight="35.0" prefWidth="150.0"
                                                                 styleClass="create-user-button" text="Gestionar Tarjetas">
-                                                        </Button>
-                                                        <Button mnemonicParsing="false" onAction="#eliminarTablero"
-                                                                prefHeight="35.0" prefWidth="150.0"
-                                                                styleClass="logout-button" text="Eliminar Tablero">
                                                         </Button>
                                                     </children>
                                                 </HBox>
