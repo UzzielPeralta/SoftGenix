@@ -7,8 +7,8 @@ public class Database {
 
     public static final String URL = "jdbc:oracle:thin:@zendo_high";
     public static final String USER = "ADMIN";
-    public static final String PASSWORD = "Zendo123****";
-    public static final String WALLET_PATH = "C:\\Users\\erick\\Downloads\\Wallet_Zendo";
+    public static final String PASSWORD = "";
+    public static final String WALLET_PATH = "";
 
     public static Connection getConnection() throws SQLException {
         try {
