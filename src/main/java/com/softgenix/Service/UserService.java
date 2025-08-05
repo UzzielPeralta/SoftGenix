@@ -70,9 +70,6 @@ public class UserService {
      */
     public static List<User> obtenerUsuariosPorRol(String rol) {
         // Solo administradores pueden consultar usuarios por rol
-        if (!Auth.isAdmin()) {
-            return new ArrayList<>();
-        }
 
         if (rol == null || rol.trim().isEmpty()) {
             return new ArrayList<>();

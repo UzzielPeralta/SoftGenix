@@ -5,65 +5,85 @@ import com.softgenix.App.Utils.Path;
 import com.softgenix.Model.User;
 import com.softgenix.Service.AuthService;
 import com.softgenix.App.Utils.Auth;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class LoginController {
-    @FXML
-    private TextField emailField;
-
-    @FXML
-    private PasswordField passwordField;
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private Button loginButton;
 
     @FXML
     void InicioSesion(ActionEvent event) {
-        String email = emailField.getText();
+        String email = emailField.getText().trim();
         String password = passwordField.getText();
 
-        // Validaciones básicas
+        // Validación rápida
         if (email.isEmpty() || password.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Error de Validación", "El correo y la contraseña son obligatorios.");
+            showAlert("Por favor, complete todos los campos");
             return;
         }
 
-        // Intentar iniciar sesión
-        User usuario = AuthService.iniciarSesion(email, password);
+        // Deshabilitar botón para evitar múltiples clicks
+        loginButton.setDisable(true);
 
-        if (usuario != null) {
-            // Almacenar usuario en sesión
-            Auth.setUsuarioActual(usuario);
-
-            // Redirigir según el rol
-            switch (usuario.getRol()) {
-                case "SUPERADMIN":
-                    App.app.setScene(Path.Dashboard); // Pantalla de administración
-                    break;
-                case "ADMIN":
-                    App.app.setScene(Path.DashboardAdmin); // Pantalla de tableros
-                    break;
-                case "USER":
-                    App.app.setScene(Path.TaskUser); // Pantalla de tareas asignadas
-                    break;
-                default:
-                    showAlert(Alert.AlertType.ERROR, "Error", "Rol no reconocido");
-                    break;
+        // Login asíncrono para mejor UX
+        Task<User> loginTask = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                return AuthService.iniciarSesion(email, password);
             }
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error de Inicio de Sesión", "El correo o la contraseña son incorrectos.");
+
+            @Override
+            protected void succeeded() {
+                loginButton.setDisable(false);
+                User usuario = getValue();
+
+                if (usuario != null) {
+                    Auth.setUsuarioActual(usuario);
+                    navegarSegunRol(usuario.getRol());
+                } else {
+                    showAlert("Credenciales incorrectas");
+                }
+            }
+
+            @Override
+            protected void failed() {
+                loginButton.setDisable(false);
+                showAlert("Error de conexión. Inténtelo de nuevo.");
+            }
+        };
+
+        new Thread(loginTask).start();
+    }
+
+    private void navegarSegunRol(String rol) {
+        switch (rol) {
+            case "SUPERADMIN":
+                App.app.setMainScene(Path.Dashboard);
+                break;
+            case "ADMIN":
+                App.app.setMainScene(Path.DashboardAdmin);
+                break;
+            case "USER":
+                App.app.setMainScene(Path.TaskUser);
+                break;
+            default:
+                showAlert("Rol de usuario no reconocido");
+                break;
         }
     }
 
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
 }
-
-
-

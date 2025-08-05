@@ -1,19 +1,33 @@
 package com.softgenix.Model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class Board {
     private int id;
     private String nombre;
-    private String descripcion; // Nuevo campo
     private int propietarioId;
-    private List<Column> columnas;
+    private String descripcion;
+    private LocalDateTime fechaCreacion;
 
+    // Constructores
     public Board() {
-        columnas = new ArrayList<>();
+        this.fechaCreacion = LocalDateTime.now();
     }
 
+    public Board(String nombre, int propietarioId, String descripcion) {
+        this();
+        this.nombre = nombre;
+        this.propietarioId = propietarioId;
+        this.descripcion = descripcion;
+    }
+
+    public Board(int id, String nombre, int propietarioId, String descripcion) {
+        this(nombre, propietarioId, descripcion);
+        this.id = id;
+    }
+
+    // Getters y Setters
     public int getId() {
         return id;
     }
@@ -27,16 +41,7 @@ public class Board {
     }
 
     public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    // Getters y setters para descripcion
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+        this.nombre = nombre != null ? nombre.trim() : null;
     }
 
     public int getPropietarioId() {
@@ -47,12 +52,57 @@ public class Board {
         this.propietarioId = propietarioId;
     }
 
-    public List<Column> getColumnas() {
-        return columnas;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setColumnas(List<Column> columnas) {
-        this.columnas = columnas;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion != null ? descripcion.trim() : "";
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    // Métodos de utilidad
+    public boolean esValido() {
+        return nombre != null && !nombre.trim().isEmpty() &&
+                propietarioId > 0;
+    }
+
+    public String getDescripcionCorta() {
+        if (descripcion == null || descripcion.isEmpty()) {
+            return "Sin descripción";
+        }
+        return descripcion.length() > 50 ?
+                descripcion.substring(0, 47) + "..." :
+                descripcion;
+    }
+
+    public String getIdentificador() {
+        return id + " - " + nombre;
+    }
+
+    // Para ComboBox con información adicional
+    public String getDisplayText() {
+        return String.format("%s (%s)", nombre, getDescripcionCorta());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Board board = (Board) obj;
+        return id == board.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override

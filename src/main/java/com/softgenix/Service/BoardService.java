@@ -23,21 +23,35 @@ public class BoardService {
      * @param descripcion Descripción del tablero
      * @return true si se creó correctamente, false en caso contrario
      */
-    public static boolean crearTablero(String nombre, String descripcion) {
-        if (!Auth.isAdmin()) {
+    public static boolean crearTablero(String nombre, String descripcion, int propietarioId) {
+        try {
+            // Si descripción es null o vacía, usar valor por defecto
+            if (descripcion == null || descripcion.trim().isEmpty()) {
+                descripcion = "Sin descripción";
+            }
+
+            int tableroId = BoardDAO.crearTableroConId(nombre, descripcion, propietarioId);
+
+            if (tableroId > 0) {
+                // Crear columnas predeterminadas
+                boolean columna1 = crearColumna(tableroId, "En Proceso");
+                boolean columna2 = crearColumna(tableroId, "Completadas");
+
+                if (columna1 && columna2) {
+                    return true;
+                } else {
+                    System.err.println("Error al crear las columnas predeterminadas");
+                    return false;
+                }
+            }
+
+            return false;
+
+        } catch (Exception e) {
+            System.err.println("Error en BoardService.crearTablero: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
-
-        if (nombre == null || nombre.trim().isEmpty()) {
-            return false;
-        }
-
-        Board tablero = new Board();
-        tablero.setNombre(nombre);
-        tablero.setDescripcion(descripcion);
-        tablero.setPropietarioId(Auth.getUsuarioActual().getId());
-
-        return BoardDAO.crearTablero(tablero);
     }
     /**
      * Crea una nueva columna en un tablero
@@ -83,7 +97,8 @@ public class BoardService {
         }
 
         int usuarioId = Auth.getUsuarioActual().getId();
-        return BoardDAO.obtenerTablerosPorUsuario(usuarioId);
+        // Cambiar obtenerTablerosPorUsuario por obtenerTablerosUsuario
+        return BoardDAO.obtenerTablerosUsuario();
     }
 
     /**
@@ -129,14 +144,13 @@ public class BoardService {
      * @param userId ID del usuario
      * @return Lista de tableros asignados al usuario
      */
-    public static List<Board> obtenerTablerosDeUsuario(int userId) {
-        // Validar que sea un usuario válido
+    public static List<Board> obtenerTablerosAsignadosAUsuario(int userId) {
         if (userId <= 0) {
             return new ArrayList<>();
         }
 
-        // Obtener los tableros desde la base de datos
-        return BoardDAO.obtenerTablerosPorUsuario(userId);
+        // Usar BoardAssignmentDAO para obtener los tableros asignados
+        return BoardAssignmentDAO.obtenerTablerosAsignadosAUsuario(userId);
     }
     /**
      * Asigna un tablero a un usuario

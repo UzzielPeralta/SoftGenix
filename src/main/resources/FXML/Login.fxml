@@ -99,7 +99,7 @@
                             </children>
                         </VBox>
                         <HBox alignment="CENTER_RIGHT" />
-                        <Button mnemonicParsing="false" onAction="#InicioSesion" prefHeight="40.0" prefWidth="150.0" styleClass="login-button" text="Iniciar Sesión">
+                        <Button fx:id="loginButton" mnemonicParsing="false" onAction="#InicioSesion" prefHeight="40.0" prefWidth="150.0" styleClass="login-button" text="Iniciar Sesión">
                             <VBox.margin>
                                 <Insets top="-5.0" />
                             </VBox.margin>

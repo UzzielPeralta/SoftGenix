@@ -13,54 +13,184 @@ import java.util.List;
 
 public class BoardAssignmentDAO {
 
+    // Constantes SQL
+    private static final String ASIGNAR_TABLERO_SQL = "INSERT INTO ASIGNACIONES_TABLERO (TABLERO_ID, USUARIO_ID) VALUES (?, ?)";
+    private static final String DESASIGNAR_TABLERO_SQL = "DELETE FROM ASIGNACIONES_TABLERO WHERE TABLERO_ID = ? AND USUARIO_ID = ?";
+    private static final String OBTENER_TABLEROS_ASIGNADOS_SQL =
+            "SELECT t.* FROM TABLEROS t JOIN ASIGNACIONES_TABLERO a ON t.ID = a.TABLERO_ID WHERE a.USUARIO_ID = ?";
+    private static final String OBTENER_USUARIOS_ASIGNADOS_SQL =
+            "SELECT u.* FROM USUARIOS u JOIN ASIGNACIONES_TABLERO a ON u.ID = a.USUARIO_ID WHERE a.TABLERO_ID = ?";
+
     /**
-     * Asigna un tablero a un usuario
+     * Método helper para mapear Board desde ResultSet
      */
-    public static boolean asignarTableroAUsuario(int tableroId, int usuarioId) {
-        String sql = "INSERT INTO ASIGNACIONES_TABLERO (TABLERO_ID, USUARIO_ID) VALUES (?, ?)";
+    private static Board mapearBoard(ResultSet rs) throws SQLException {
+        Board tablero = new Board();
+        tablero.setId(rs.getInt("ID"));
+        tablero.setNombre(rs.getString("NOMBRE"));
+        tablero.setPropietarioId(rs.getInt("PROPIETARIO_ID"));
 
-        try (Connection conn = Database.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, tableroId);
-            pstmt.setInt(2, usuarioId);
-
-            int filasAfectadas = pstmt.executeUpdate();
-            return filasAfectadas > 0;
+        try {
+            tablero.setDescripcion(rs.getString("DESCRIPCION"));
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            tablero.setDescripcion("");
         }
+
+        return tablero;
     }
 
     /**
-     * Elimina la asignación de un tablero a un usuario
+     * Método helper para mapear User desde ResultSet
      */
-    public static boolean desasignarTableroDeUsuario(int tableroId, int usuarioId) {
-        String sql = "DELETE FROM ASIGNACIONES_TABLERO WHERE TABLERO_ID = ? AND USUARIO_ID = ?";
-
-        try (Connection conn = Database.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, tableroId);
-            pstmt.setInt(2, usuarioId);
-
-            int filasAfectadas = pstmt.executeUpdate();
-            return filasAfectadas > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+    private static User mapearUsuario(ResultSet rs) throws SQLException {
+        User usuario = new User();
+        usuario.setId(rs.getInt("ID"));
+        usuario.setEmail(rs.getString("EMAIL"));
+        usuario.setNombre(rs.getString("NOMBRE"));
+        usuario.setRol(rs.getString("ROL"));
+        return usuario;
     }
 
     /**
-     * Obtiene los tableros asignados a un usuario específico
+     * Optimización del método obtenerTablerosAsignadosAUsuario
      */
     public static List<Board> obtenerTablerosAsignadosAUsuario(int usuarioId) {
         List<Board> tableros = new ArrayList<>();
-        String sql = "SELECT t.* FROM TABLEROS t " +
-                "JOIN ASIGNACIONES_TABLERO a ON t.ID = a.TABLERO_ID " +
-                "WHERE a.USUARIO_ID = ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(OBTENER_TABLEROS_ASIGNADOS_SQL)) {
+
+            pstmt.setInt(1, usuarioId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    tableros.add(mapearBoard(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener tableros asignados: " + e.getMessage());
+        }
+
+        return tableros;
+    }
+
+    /**
+     * Optimización del método obtenerUsuariosAsignadosATablero
+     */
+    public static List<User> obtenerUsuariosAsignadosATablero(int tableroId) {
+        List<User> usuarios = new ArrayList<>();
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(OBTENER_USUARIOS_ASIGNADOS_SQL)) {
+
+            pstmt.setInt(1, tableroId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    usuarios.add(mapearUsuario(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener usuarios asignados: " + e.getMessage());
+        }
+
+        return usuarios;
+    }
+
+    /**
+     * Método optimizado para asignaciones múltiples (batch)
+     */
+    public static boolean asignarTableroAMultiplesUsuarios(int tableroId, List<Integer> usuarioIds) {
+        try (Connection conn = Database.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(ASIGNAR_TABLERO_SQL)) {
+
+            conn.setAutoCommit(false);
+
+            for (Integer usuarioId : usuarioIds) {
+                pstmt.setInt(1, tableroId);
+                pstmt.setInt(2, usuarioId);
+                pstmt.addBatch();
+            }
+
+            int[] results = pstmt.executeBatch();
+            conn.commit();
+
+            // Verificar que todas las operaciones fueron exitosas
+            for (int result : results) {
+                if (result <= 0) return false;
+            }
+
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Error en asignación múltiple: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Optimización de métodos existentes
+     */
+    public static boolean asignarTableroAUsuario(int tableroId, int usuarioId) {
+        try (Connection conn = Database.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(ASIGNAR_TABLERO_SQL)) {
+
+            pstmt.setInt(1, tableroId);
+            pstmt.setInt(2, usuarioId);
+
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al asignar tablero: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static boolean desasignarTableroDeUsuario(int tableroId, int usuarioId) {
+        try (Connection conn = Database.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(DESASIGNAR_TABLERO_SQL)) {
+
+            pstmt.setInt(1, tableroId);
+            pstmt.setInt(2, usuarioId);
+
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al desasignar tablero: " + e.getMessage());
+            return false;
+        }
+    }
+    /**
+     * Elimina todas las asignaciones de tablero de un usuario específico
+     * Necesario antes de eliminar un usuario del sistema
+     */
+    public static boolean eliminarTodasAsignacionesDeUsuario(int usuarioId) {
+        String sql = "DELETE FROM ASIGNACIONES_TABLERO WHERE USUARIO_ID = ?";
+
+        try (Connection conn = Database.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, usuarioId);
+            int filasAfectadas = pstmt.executeUpdate();
+
+            System.out.println("Asignaciones eliminadas para usuario " + usuarioId + ": " + filasAfectadas);
+            return true; // Retorna true aunque no haya asignaciones (0 filas)
+
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar asignaciones de usuario: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Verifica si un usuario tiene asignaciones de tablero
+     */
+    public static boolean usuarioTieneAsignaciones(int usuarioId) {
+        String sql = "SELECT COUNT(*) as total FROM ASIGNACIONES_TABLERO WHERE USUARIO_ID = ?";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -68,49 +198,15 @@ public class BoardAssignmentDAO {
             pstmt.setInt(1, usuarioId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    Board tablero = new Board();
-                    tablero.setId(rs.getInt("ID"));
-                    tablero.setNombre(rs.getString("NOMBRE"));
-                    tablero.setPropietarioId(rs.getInt("CREADOR_ID"));
-                    tableros.add(tablero);
+                if (rs.next()) {
+                    return rs.getInt("total") > 0;
                 }
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al verificar asignaciones: " + e.getMessage());
         }
 
-        return tableros;
-    }
-
-    /**
-     * Obtiene los usuarios asignados a un tablero específico
-     */
-    public static List<User> obtenerUsuariosAsignadosATablero(int tableroId) {
-        List<User> usuarios = new ArrayList<>();
-        String sql = "SELECT u.* FROM USUARIOS u " +
-                "JOIN ASIGNACIONES_TABLERO a ON u.ID = a.USUARIO_ID " +
-                "WHERE a.TABLERO_ID = ?";
-
-        try (Connection conn = Database.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, tableroId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    User usuario = new User();
-                    usuario.setId(rs.getInt("ID"));
-                    usuario.setEmail(rs.getString("EMAIL"));
-                    usuario.setNombre(rs.getString("NOMBRE"));
-                    usuario.setRol(rs.getString("ROL"));
-                    usuarios.add(usuario);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return usuarios;
+        return false;
     }
 }
