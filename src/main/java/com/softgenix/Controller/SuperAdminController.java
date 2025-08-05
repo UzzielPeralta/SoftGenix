@@ -103,38 +103,12 @@ public class SuperAdminController implements Initializable {
 
     public void mostrarGestionUsuarios() {
         ocultarTodosPaneles();
-        headerTitleLabel.setText("Gestión de Usuarios");
+        headerTitleLabel.setText("Gestión de Admin");
         usuariosPanel.setVisible(true);
         usuariosPanel.setManaged(true);
-    }
 
-    public void mostrarPanelAsignacion() {
-        ocultarTodosPaneles();
-        headerTitleLabel.setText("Asignación de Tableros");
-        asignacionPanel.setVisible(true);
-        asignacionPanel.setManaged(true);
-
-        // Cargar los datos necesarios
-        cargarTablerosAdmin();
-        cargarUsuariosDisponibles();
-    }
-
-    public void mostrarGestionTarjetas() {
-        ocultarTodosPaneles();
-        headerTitleLabel.setText("Gestión de Tarjetas");
-        tarjetasPanel.setVisible(true);
-        tarjetasPanel.setManaged(true);
-    }
-
-    @FXML
-    private void volverATableros() {
-        ocultarTodosPaneles(); // Oculta *todos* los paneles, incluyendo tarjetasPanel
-
-        tablerosPanel.setVisible(true);
-        tablerosPanel.setManaged(true);
-
-        headerTitleLabel.setText("Gestión de Tableros");
-        cargarTableros();
+        // Cargar usuarios existentes al mostrar el panel
+        cargarUsuarios();
     }
 
     @FXML
@@ -144,7 +118,7 @@ public class SuperAdminController implements Initializable {
         String nombre = nombreField.getText();
         String rol = "ADMIN";
 
-        System.out.println("Intentando crear usuario: " + nombre + ", " + email);
+        System.out.println("Intentando crear admnin: " + nombre + ", " + email);
 
         if (email.isEmpty() || password.isEmpty() || nombre.isEmpty()) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "Todos los campos son obligatorios");
@@ -156,11 +130,11 @@ public class SuperAdminController implements Initializable {
             System.out.println("Resultado: " + creado);
 
             if (creado) {
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Usuario creado correctamente");
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin creado correctamente");
                 limpiarFormulario();
                 cargarUsuarios();
             } else {
-                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el usuario");
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el admin");
             }
         } catch (Exception e) {
             System.err.println("Excepción: " + e.getMessage());
@@ -173,29 +147,36 @@ public class SuperAdminController implements Initializable {
     private void eliminarUsuario(ActionEvent event) {
         User usuarioSeleccionado = usuariosTableView.getSelectionModel().getSelectedItem();
         if (usuarioSeleccionado == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un usuario para eliminar");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un admin para eliminar");
             return;
         }
 
         // Solo permitir eliminar usuarios tipo USER
         if (!"ADMIN".equals(usuarioSeleccionado.getRol())) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Solo puede eliminar usuarios con rol USER");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Solo puede eliminar admin con rol USER");
             return;
         }
 
         boolean eliminado = UserService.eliminarUsuario(usuarioSeleccionado.getId());
         if (eliminado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Usuario eliminado correctamente");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin eliminado correctamente");
             cargarUsuarios();
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el usuario");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el admin");
         }
     }
 
     @FXML
     private void cerrarSesion(ActionEvent event) {
-        Auth.cerrarSesion();
-        App.app.setScene(Path.Login);
+        try {
+            Auth.cerrarSesion();
+            App.app.setLoginScene(); // Cambiar setScene por setLoginScene
+
+        } catch (Exception e) {
+            System.err.println("Error al cerrar sesión: " + e.getMessage());
+            Auth.cerrarSesion();
+            App.app.setLoginScene(); // También aquí
+        }
     }
 
     private void cargarUsuarios() {
@@ -229,27 +210,9 @@ public class SuperAdminController implements Initializable {
     @FXML private TableColumn<User, String> nombreAsignadoColumn;
     @FXML private TableColumn<User, String> emailAsignadoColumn;
 
-    // Botón en sidebar para mostrar el panel de asignación
-    @FXML
-    private Button asignarTablerosBtn;
 
-    private void cargarTablerosAdmin() {
-        List<Board> tableros = BoardService.obtenerTablerosUsuario();
-        tablerosComboBox.getItems().clear();
 
-        for (Board tablero : tableros) {
-            tablerosComboBox.getItems().add(tablero.getId() + " - " + tablero.getNombre());
-        }
 
-        if (!tableros.isEmpty()) {
-            tablerosComboBox.getSelectionModel().selectFirst();
-            actualizarUsuariosAsignados();
-        }
-    }
-
-    /**
-     * Carga los usuarios con rol USER
-     */
     private void cargarUsuariosDisponibles() {
         List<User> usuarios = UserService.obtenerUsuariosPorRol("ADMIN");
 
@@ -267,46 +230,7 @@ public class SuperAdminController implements Initializable {
         usuariosDisponiblesTable.getItems().addAll(usuarios);
     }
 
-    /**
-     * Actualiza la lista de usuarios asignados al tablero seleccionado
-     */
-    @FXML
-    private void actualizarUsuariosAsignados() {
-        String seleccion = tablerosComboBox.getValue();
-        if (seleccion == null) return;
 
-        int tableroId = Integer.parseInt(seleccion.split(" - ")[0]);
-        List<User> usuariosAsignados = BoardService.obtenerUsuariosAsignadosATablero(tableroId);
-
-        usuariosAsignadosTable.getItems().clear();
-        usuariosAsignadosTable.getItems().addAll(usuariosAsignados);
-    }
-
-    /**
-     * Asigna un tablero al usuario seleccionado
-     */
-    @FXML
-    private void asignarTableroAUsuario() {
-        String seleccion = tablerosComboBox.getValue();
-        User usuarioSeleccionado = usuariosDisponiblesTable.getSelectionModel().getSelectedItem();
-
-        if (seleccion == null || usuarioSeleccionado == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Debe seleccionar un tablero y un usuario");
-            return;
-        }
-
-        int tableroId = Integer.parseInt(seleccion.split(" - ")[0]);
-        int usuarioId = usuarioSeleccionado.getId();
-
-        boolean resultado = BoardService.asignarTableroAUsuario(tableroId, usuarioId);
-
-        if (resultado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero asignado correctamente");
-            actualizarUsuariosAsignados();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo asignar el tablero al usuario");
-        }
-    }
 
     // Elementos UI para tableros
     @FXML private TextField tableroNombreField;
@@ -356,15 +280,23 @@ public class SuperAdminController implements Initializable {
             return;
         }
 
-        boolean creado = BoardService.crearTablero(nombre, descripcion);
+        try {
+            // Obtener el usuario actual como propietario
+            int propietarioId = Auth.getUsuarioActual().getId();
+            boolean creado = BoardService.crearTablero(nombre, descripcion, propietarioId);
 
-        if (creado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero creado correctamente");
-            tableroNombreField.clear();
-            tableroDescripcionField.clear();
-            cargarTableros();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el tablero");
+            if (creado) {
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero creado correctamente");
+                tableroNombreField.clear();
+                tableroDescripcionField.clear();
+                cargarTableros(); // Recargar inmediatamente la tabla
+            } else {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el tablero");
+            }
+        } catch (Exception e) {
+            System.err.println("Error al crear tablero: " + e.getMessage());
+            e.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error inesperado: " + e.getMessage());
         }
     }
 
@@ -399,37 +331,6 @@ public class SuperAdminController implements Initializable {
     // Tablero seleccionado actualmente
     private Board tableroActual;
 
-    /**
-     * Muestra el panel de gestión de tarjetas para el tablero seleccionado
-     */
-    @FXML
-    private void gestionarTarjetasTablero() {
-        // Obtener el tablero seleccionado
-        tableroActual = tablerosTableView.getSelectionModel().getSelectedItem();
-
-        if (tableroActual == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un tablero para gestionar sus tarjetas");
-            return;
-        }
-
-        // Ocultar panel de tableros pero mantener la barra superior
-        tablerosPanel.setVisible(false);
-        tablerosPanel.setManaged(false);
-
-        // Configurar panel de tarjetas
-        tableroActualLabel.setText("Mi tablero de " + tableroActual.getNombre());
-
-        // Configurar columnas de la tabla
-        tarjetaTituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
-        tarjetaDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
-
-        // Cargar tarjetas existentes
-        cargarTarjetasTablero();
-
-        // Mostrar panel de tarjetas
-        tarjetasPanel.setVisible(true);
-        tarjetasPanel.setManaged(true);
-    }
 
     /**
      * Carga las tarjetas del tablero actual
@@ -501,27 +402,4 @@ public class SuperAdminController implements Initializable {
 
         return -1; // Error
     }
-
-    /**
-     * Elimina la tarjeta seleccionada
-     */
-    @FXML
-    private void eliminarTarjeta() {
-        Card tarjetaSeleccionada = tarjetasTableView.getSelectionModel().getSelectedItem();
-        if (tarjetaSeleccionada == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione una tarjeta para eliminar");
-            return;
-        }
-
-        boolean eliminado = CardDAO.eliminarTarjeta(tarjetaSeleccionada.getId());
-        if (eliminado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tarjeta eliminada correctamente");
-            cargarTarjetasTablero();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar la tarjeta");
-        }
-    }
-
-
-
 }

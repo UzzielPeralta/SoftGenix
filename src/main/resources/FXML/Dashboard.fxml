@@ -29,7 +29,7 @@
                 <Button fx:id="crearTableroBtn" onAction="#mostrarGestionTableros" mnemonicParsing="false"
                         prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear tablero" />
                 <Button fx:id="crearUserBtn" onAction="#mostrarGestionUsuarios" mnemonicParsing="false"
-                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear Usuario" />
+                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear Admin" />
             </children>
             <padding>
                 <Insets left="20.0" right="20.0" top="20.0" />
@@ -86,7 +86,7 @@
                                         <VBox spacing="15.0" styleClass="form-container" AnchorPane.leftAnchor="10.0"
                                               AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
                                             <children>
-                                                <Label styleClass="form-title" text="Crear nuevo usuario" />
+                                                <Label styleClass="form-title" text="Crear nuevo Admin" />
                                                 <Label text="Nombre:" styleClass="form-label" />
                                                 <TextField fx:id="nombreField" promptText="Nombre completo" styleClass="form-field" />
                                                 <Label text="Email:" styleClass="form-label" />
@@ -94,7 +94,7 @@
                                                 <Label text="Contraseña:" styleClass="form-label" />
                                                 <PasswordField fx:id="passwordField" promptText="Contraseña" styleClass="form-field" />
                                                 <Button mnemonicParsing="false" onAction="#crearUsuario" prefHeight="35.0" prefWidth="150.0"
-                                                        styleClass="create-user-button" text="Crear Usuario" />
+                                                        styleClass="create-user-button" text="Crear admin" />
                                             </children>
                                             <padding>
                                                 <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
@@ -121,7 +121,7 @@
                                                     <children>
                                                         <Button mnemonicParsing="false" onAction="#eliminarUsuario"
                                                                 prefHeight="35.0" prefWidth="150.0"
-                                                                styleClass="logout-button" text="Eliminar Usuario" />
+                                                                styleClass="logout-button" text="Eliminar Admin" />
                                                     </children>
                                                 </HBox>
                                             </children>

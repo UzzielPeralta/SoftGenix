@@ -1,6 +1,7 @@
 package com.softgenix.Dao;
 
 import com.softgenix.App.Config.Database;
+import com.softgenix.App.Utils.Auth;
 import com.softgenix.Model.Board;
 import com.softgenix.Model.Column;
 
@@ -10,23 +11,36 @@ import java.util.List;
 
 public class BoardDAO {
 
+    // Pool de conexiones reutilizable
+    private static final String CREAR_TABLERO_SQL = "INSERT INTO TABLEROS (NOMBRE, PROPIETARIO_ID, DESCRIPCION) VALUES (?, ?, ?)";
+    private static final String OBTENER_TABLERO_SQL = "SELECT ID, NOMBRE, PROPIETARIO_ID FROM TABLEROS WHERE ID = ?";
+    private static final String OBTENER_TODOS_TABLEROS_SQL = "SELECT ID, NOMBRE, PROPIETARIO_ID, DESCRIPCION FROM TABLEROS ORDER BY ID DESC";
+    private static final String ELIMINAR_TABLERO_SQL = "DELETE FROM TABLEROS WHERE ID = ?";
+
     /**
      * Crea un nuevo tablero en la base de datos
      */
-    public static boolean crearTablero(Board tablero) {
-        String sql = "INSERT INTO TABLEROS (NOMBRE, PROPIETARIO_ID) VALUES (?, ?)";
+    public static int crearTableroConId(String nombre, String descripcion, int propietarioId) {
+        try (Connection connection = Database.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(CREAR_TABLERO_SQL, new String[]{"ID"})) {
 
-        try (Connection conn = Database.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nombre);
+            stmt.setInt(2, propietarioId);
+            stmt.setString(3, descripcion);
 
-            pstmt.setString(1, tablero.getNombre());
-            pstmt.setInt(2, tablero.getPropietarioId());
+            int filasAfectadas = stmt.executeUpdate();
+            if (filasAfectadas > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1);
+                    }
+                }
+            }
+            return -1;
 
-            int filasAfectadas = pstmt.executeUpdate();
-            return filasAfectadas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            System.err.println("Error al crear tablero: " + e.getMessage());
+            return -1;
         }
     }
 
@@ -100,33 +114,70 @@ public class BoardDAO {
             return false;
         }
     }
-
-    /**
-     * Obtiene todos los tableros de un usuario
-     */
-    public static List<Board> obtenerTablerosPorUsuario(int usuarioId) {
-        List<Board> tableros = new ArrayList<>();
-        String sql = "SELECT ID, NOMBRE, PROPIETARIO_ID FROM TABLEROS WHERE PROPIETARIO_ID = ? ORDER BY ID";
+    public static Board obtenerUltimoTableroCreado() {
+        String sql = "SELECT * FROM TABLEROS WHERE PROPIETARIO_ID = ? ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, usuarioId);
+            pstmt.setInt(1, Auth.getUsuarioActual().getId());
 
             try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
+                if (rs.next()) {
                     Board tablero = new Board();
                     tablero.setId(rs.getInt("ID"));
                     tablero.setNombre(rs.getString("NOMBRE"));
+                    try {
+                        tablero.setDescripcion(rs.getString("DESCRIPCION"));
+                    } catch (SQLException e) {
+                        tablero.setDescripcion("");
+                    }
                     tablero.setPropietarioId(rs.getInt("PROPIETARIO_ID"));
-                    tableros.add(tablero);
+                    return tablero;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+        return null;
+    }
+
+    /**
+     * Obtiene todos los tableros de un usuario
+     */
+    public static List<Board> obtenerTablerosUsuario() {
+        List<Board> tableros = new ArrayList<>();
+
+        try (Connection connection = Database.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(OBTENER_TODOS_TABLEROS_SQL);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Board tablero = mapearBoard(rs);
+                tableros.add(tablero);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener tableros: " + e.getMessage());
+        }
+
         return tableros;
+    }
+
+    private static Board mapearBoard(ResultSet rs) throws SQLException {
+        Board tablero = new Board();
+        tablero.setId(rs.getInt("ID"));
+        tablero.setNombre(rs.getString("NOMBRE"));
+        tablero.setPropietarioId(rs.getInt("PROPIETARIO_ID"));
+
+        try {
+            tablero.setDescripcion(rs.getString("DESCRIPCION"));
+        } catch (SQLException e) {
+            tablero.setDescripcion(""); // Valor por defecto
+        }
+
+        return tablero;
     }
 
     /**
@@ -157,58 +208,38 @@ public class BoardDAO {
 
         return columnas;
     }
+    /**
+     /**
+
+
 
     /**
      * Elimina un tablero y todas sus columnas y tarjetas asociadas
      */
     public static boolean eliminarTablero(int tableroId) {
-        // Primero eliminamos las asignaciones de tarjetas
-        String sqlAsignaciones = "DELETE FROM ASIGNACIONES_TARJETA WHERE TARJETA_ID IN " +
-                "(SELECT ID FROM TARJETAS WHERE COLUMNA_ID IN " +
-                "(SELECT ID FROM COLUMNAS WHERE TABLERO_ID = ?))";
-
-        // Luego eliminamos las tarjetas
-        String sqlTarjetas = "DELETE FROM TARJETAS WHERE COLUMNA_ID IN " +
-                "(SELECT ID FROM COLUMNAS WHERE TABLERO_ID = ?)";
-
-        // Después eliminamos las columnas
-        String sqlColumnas = "DELETE FROM COLUMNAS WHERE TABLERO_ID = ?";
-
-        // Finalmente eliminamos el tablero
-        String sqlTablero = "DELETE FROM TABLEROS WHERE ID = ?";
+        String[] sqlStatements = {
+                "DELETE FROM ASIGNACIONES_TARJETA WHERE TARJETA_ID IN (SELECT ID FROM TARJETAS WHERE COLUMNA_ID IN (SELECT ID FROM COLUMNAS WHERE TABLERO_ID = ?))",
+                "DELETE FROM TARJETAS WHERE COLUMNA_ID IN (SELECT ID FROM COLUMNAS WHERE TABLERO_ID = ?)",
+                "DELETE FROM COLUMNAS WHERE TABLERO_ID = ?",
+                "DELETE FROM ASIGNACIONES_TABLERO WHERE TABLERO_ID = ?",
+                ELIMINAR_TABLERO_SQL
+        };
 
         try (Connection conn = Database.getConnection()) {
-            // Iniciamos una transacción para asegurar que todo se elimina o nada
             conn.setAutoCommit(false);
 
-            try (PreparedStatement pstmtAsignaciones = conn.prepareStatement(sqlAsignaciones);
-                 PreparedStatement pstmtTarjetas = conn.prepareStatement(sqlTarjetas);
-                 PreparedStatement pstmtColumnas = conn.prepareStatement(sqlColumnas);
-                 PreparedStatement pstmtTablero = conn.prepareStatement(sqlTablero)) {
-
-                pstmtAsignaciones.setInt(1, tableroId);
-                pstmtAsignaciones.executeUpdate();
-
-                pstmtTarjetas.setInt(1, tableroId);
-                pstmtTarjetas.executeUpdate();
-
-                pstmtColumnas.setInt(1, tableroId);
-                pstmtColumnas.executeUpdate();
-
-                pstmtTablero.setInt(1, tableroId);
-                int filasAfectadas = pstmtTablero.executeUpdate();
-
-                conn.commit();
-                return filasAfectadas > 0;
-            } catch (SQLException e) {
-                conn.rollback();
-                e.printStackTrace();
-                return false;
-            } finally {
-                conn.setAutoCommit(true);
+            for (String sql : sqlStatements) {
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setInt(1, tableroId);
+                    pstmt.executeUpdate();
+                }
             }
+
+            conn.commit();
+            return true;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al eliminar tablero: " + e.getMessage());
             return false;
         }
     }

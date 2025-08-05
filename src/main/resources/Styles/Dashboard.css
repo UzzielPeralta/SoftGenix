@@ -268,3 +268,138 @@
     -fx-border-color: #b2d8ff;
     -fx-border-width: 2;
 }
+
+/* Estilos mejorados para tarjetas */
+.card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 6, 0, 0, 3);
+    -fx-padding: 16px;
+    -fx-spacing: 10px;
+    -fx-margin: 0 0 12px 0;
+    -fx-cursor: hand;
+}
+
+.card:hover {
+    -fx-border-color: #74C0FC;
+    -fx-effect: dropshadow(three-pass-box, rgba(116,192,252,0.25), 8, 0, 0, 4);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.card-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1a202c;
+    -fx-wrap-text: true;
+}
+
+.card-description {
+    -fx-font-size: 13px;
+    -fx-text-fill: #718096;
+    -fx-wrap-text: true;
+    -fx-padding: 0 0 8px 0;
+    -fx-line-spacing: 2px;
+}
+
+.complete-btn {
+    -fx-background-color: #48bb78;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(three-pass-box, rgba(72,187,120,0.3), 4, 0, 0, 2);
+}
+
+.complete-btn:hover {
+    -fx-background-color: #38a169;
+    -fx-effect: dropshadow(three-pass-box, rgba(56,161,105,0.4), 6, 0, 0, 3);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.complete-btn:pressed {
+    -fx-background-color: #2f855a;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.empty-message {
+    -fx-text-fill: #a0aec0;
+    -fx-font-style: italic;
+    -fx-font-size: 14px;
+    -fx-padding: 30px 20px;
+    -fx-alignment: center;
+    -fx-background-color: #f7fafc;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2px;
+    -fx-border-style: dashed;
+    -fx-border-radius: 8px;
+}
+
+/* Estilos mejorados para las columnas */
+.kanban-column {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 16px;
+    -fx-border-radius: 16px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-min-width: 350px;
+    -fx-max-width: 400px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);
+}
+
+.column-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2d3748;
+    -fx-alignment: center;
+    -fx-padding: 16px 0 8px 0;
+    -fx-background-color: transparent;
+    -fx-border-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: none;
+}
+
+/* Títulos específicos por columna */
+.column-title.en-proceso {
+    -fx-text-fill: #2b6cb0;
+}
+
+.column-title.completada {
+    -fx-text-fill: #38a169;
+}
+
+.kanban-separator {
+    -fx-background-color: #cbd5e0;
+    -fx-padding: 0;
+    -fx-opacity: 0.6;
+}
+
+/* Animaciones suaves */
+.card,
+.complete-btn {
+    -fx-transition: all 0.2s ease-in-out;
+}
+
+.reopen-btn {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 5 10;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.reopen-btn:hover {
+    -fx-background-color: #e67e22;
+}
