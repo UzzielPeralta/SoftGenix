@@ -27,7 +27,7 @@
                     </children>
                 </HBox>
                 <Button fx:id="crearTableroBtn" onAction="#mostrarGestionTableros" mnemonicParsing="false"
-                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear tablero" />
+                        prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="Gestion de Tableros" />
                 <Button fx:id="crearUserBtn" onAction="#mostrarGestionUsuarios" mnemonicParsing="false"
                         prefHeight="45.0" prefWidth="240.0" styleClass="sidebar-button" text="+ Crear Usuario" />
                 <Button fx:id="asignarTablerosBtn" onAction="#mostrarPanelAsignacion" mnemonicParsing="false"
@@ -208,11 +208,16 @@
                                 <VBox spacing="10.0" VBox.vgrow="ALWAYS">
                                     <children>
                                         <Label styleClass="form-title" text="Tarjetas del tablero" />
+                                        <!-- En la sección de tarjetas, actualizar la TableView -->
                                         <TableView fx:id="tarjetasTableView" VBox.vgrow="ALWAYS">
                                             <columns>
-                                                <TableColumn fx:id="tarjetaTituloColumn" prefWidth="200.0" text="Título" />
-                                                <TableColumn fx:id="tarjetaDescripcionColumn" prefWidth="400.0" text="Descripción" />
+                                                <TableColumn fx:id="tarjetaTituloColumn" prefWidth="250.0" minWidth="150.0" text="Título" />
+                                                <TableColumn fx:id="tarjetaDescripcionColumn" prefWidth="400.0" minWidth="200.0" text="Descripción" />
+                                                <TableColumn fx:id="tarjetaProcesoColumn" prefWidth="200.0" minWidth="120.0" text="Proceso" />
                                             </columns>
+                                            <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                            </columnResizePolicy>
                                         </TableView>
                                         <Button mnemonicParsing="false" onAction="#eliminarTarjeta"
                                                 prefHeight="35.0" prefWidth="200.0"

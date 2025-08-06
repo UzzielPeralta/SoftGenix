@@ -403,3 +403,178 @@
 .reopen-btn:hover {
     -fx-background-color: #e67e22;
 }
+
+/* Estilos adicionales para el kanban */
+.kanban-column {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.column-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-alignment: center;
+}
+
+.column-title.en-proceso {
+    -fx-text-fill: #fd7e14;
+}
+
+.column-title.completada {
+    -fx-text-fill: #28a745;
+}
+
+/* Estilos para tarjetas */
+.card-container {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 12;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);
+}
+
+.card-container:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+.card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+    -fx-wrap-text: true;
+}
+
+.card-description {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6c757d;
+    -fx-wrap-text: true;
+}
+
+/* Scrollbar personalizada */
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #f1f1f1;
+    -fx-border-color: transparent;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #c1c1c1;
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+}
+
+/* Mejoras adicionales para el diseño moderno */
+.kanban-column .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.kanban-column .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.kanban-column .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 0 5px 0 0;
+}
+
+.kanban-column .scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: rgba(0,0,0,0.1);
+    -fx-background-radius: 10;
+}
+
+.kanban-column .scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(0,0,0,0.3);
+    -fx-background-radius: 10;
+}
+
+.kanban-column .scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: rgba(0,0,0,0.5);
+}
+
+/* Animaciones suaves para las tarjetas */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 15px;
+    -fx-border-radius: 15px;
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+    -fx-padding: 18px;
+    -fx-spacing: 12px;
+    -fx-cursor: hand;
+    -fx-transition: all 0.3s ease;
+}
+
+.card:hover {
+    -fx-border-color: #42a5f5;
+    -fx-effect: dropshadow(gaussian, rgba(66,165,245,0.3), 12, 0, 0, 6);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+/* Botones de acción mejorados */
+.complete-btn, .process-btn {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 18px;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-transition: all 0.2s ease;
+}
+
+.complete-btn:hover, .process-btn:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.complete-btn:pressed, .process-btn:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+/* Indicadores de estado */
+.status-indicator {
+    -fx-background-radius: 50%;
+    -fx-min-width: 12px;
+    -fx-min-height: 12px;
+    -fx-max-width: 12px;
+    -fx-max-height: 12px;
+}
+
+.status-in-progress {
+    -fx-background-color: #ff9800;
+}
+
+.status-completed {
+    -fx-background-color: #4caf50;
+}
+
+/* Efectos de carga */
+.loading-spinner {
+    -fx-progress-color: #42a5f5;
+}

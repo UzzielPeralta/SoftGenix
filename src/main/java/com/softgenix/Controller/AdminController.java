@@ -32,51 +32,86 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ResourceBundle;
 
-
-
 public class AdminController implements Initializable {
 
-    @FXML private TableView<User> usuariosTableView;
-    @FXML private TableColumn<User, Integer> idColumn;
-    @FXML private TableColumn<User, String> nombreColumn;
-    @FXML private TableColumn<User, String> emailColumn;
-    @FXML private TableColumn<User, String> rolColumn;
-    @FXML private VBox welcomePanel;
-    @FXML private AnchorPane usuariosPanel;
-    @FXML private AnchorPane tablerosPanel;
-    @FXML private AnchorPane tarjetasPanel;
-    @FXML private AnchorPane asignacionPanel;
-    @FXML private Label headerTitleLabel;
+    // Columnas de tarjetas - actualizada con la columna de proceso
+    @FXML
+    private TableColumn<Card, String> tarjetaProcesoColumn;
+
+    @FXML
+    private TableView<User> usuariosTableView;
+    @FXML
+    private TableColumn<User, Integer> idColumn;
+    @FXML
+    private TableColumn<User, String> nombreColumn;
+    @FXML
+    private TableColumn<User, String> emailColumn;
+    @FXML
+    private TableColumn<User, String> rolColumn;
+    @FXML
+    private VBox welcomePanel;
+    @FXML
+    private AnchorPane usuariosPanel;
+    @FXML
+    private AnchorPane tablerosPanel;
+    @FXML
+    private AnchorPane tarjetasPanel;
+    @FXML
+    private AnchorPane asignacionPanel;
+    @FXML
+    private Label headerTitleLabel;
 
     // Formulario usuarios
-    @FXML private TextField emailField;
-    @FXML private PasswordField passwordField;
-    @FXML private TextField nombreField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private TextField nombreField;
 
     // Tableros
-    @FXML private TableView<Board> tablerosTableView;
-    @FXML private TableColumn<Board, Integer> tableroIdColumn;
-    @FXML private TableColumn<Board, String> tableroNombreColumn;
-    @FXML private TableColumn<Board, String> tableroDescripcionColumn;
+    @FXML
+    private TableView<Board> tablerosTableView;
+    @FXML
+    private TableColumn<Board, Integer> tableroIdColumn;
+    @FXML
+    private TableColumn<Board, String> tableroNombreColumn;
+    @FXML
+    private TableColumn<Board, String> tableroDescripcionColumn;
 
     // Asignaciones
-    @FXML private ComboBox<String> tablerosComboBox;
-    @FXML private TableView<User> usuariosDisponiblesTable;
-    @FXML private TableColumn<User, Integer> idUsuarioColumn;
-    @FXML private TableColumn<User, String> nombreUsuarioColumn;
-    @FXML private TableColumn<User, String> emailUsuarioColumn;
-    @FXML private TableView<User> usuariosAsignadosTable;
-    @FXML private TableColumn<User, Integer> idAsignadoColumn;
-    @FXML private TableColumn<User, String> nombreAsignadoColumn;
-    @FXML private TableColumn<User, String> emailAsignadoColumn;
+    @FXML
+    private ComboBox<String> tablerosComboBox;
+    @FXML
+    private TableView<User> usuariosDisponiblesTable;
+    @FXML
+    private TableColumn<User, Integer> idUsuarioColumn;
+    @FXML
+    private TableColumn<User, String> nombreUsuarioColumn;
+    @FXML
+    private TableColumn<User, String> emailUsuarioColumn;
+    @FXML
+    private TableView<User> usuariosAsignadosTable;
+    @FXML
+    private TableColumn<User, Integer> idAsignadoColumn;
+    @FXML
+    private TableColumn<User, String> nombreAsignadoColumn;
+    @FXML
+    private TableColumn<User, String> emailAsignadoColumn;
 
     // Tarjetas
-    @FXML private Label tableroActualLabel;
-    @FXML private TextField tarjetaTituloField;
-    @FXML private TextArea tarjetaDescripcionField;
-    @FXML private TableView<Card> tarjetasTableView;
-    @FXML private TableColumn<Card, String> tarjetaTituloColumn;
-    @FXML private TableColumn<Card, String> tarjetaDescripcionColumn;
+    @FXML
+    private Label tableroActualLabel;
+    @FXML
+    private TextField tarjetaTituloField;
+    @FXML
+    private TextArea tarjetaDescripcionField;
+    @FXML
+    private TableView<Card> tarjetasTableView;
+    @FXML
+    private TableColumn<Card, String> tarjetaTituloColumn;
+    @FXML
+    private TableColumn<Card, String> tarjetaDescripcionColumn;
 
     private Board tableroActual;
 
@@ -106,9 +141,164 @@ public class AdminController implements Initializable {
         nombreAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         emailAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        // Tarjetas
+        // Tarjetas - actualizada con la columna de proceso
         tarjetaTituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
         tarjetaDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+
+        // Nueva columna para mostrar el proceso/estado
+        tarjetaProcesoColumn.setCellValueFactory(cellData -> {
+            Card tarjeta = cellData.getValue();
+            String nombreColumna = obtenerNombreColumnaPorId(tarjeta.getColumnaId());
+            return new javafx.beans.property.SimpleStringProperty(nombreColumna);
+        });
+
+        tarjetaProcesoColumn.setCellFactory(column -> new TableCell<Card, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    String icono = obtenerIconoPorEstado(item);
+                    String color = obtenerColorPorEstado(item);
+
+                    setText(icono + " " + item);
+                    setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+                }
+            }
+        });
+    }
+
+    // Método mejorado para obtener el icono según el estado
+    private String obtenerIconoPorEstado(String estado) {
+        if (estado == null) return "❓";
+
+        String estadoLimpio = estado.toLowerCase().trim();
+
+        // Patrones para completado - CORREGIDO para incluir "completadas"
+        if (estadoLimpio.contains("completado") ||
+                estadoLimpio.contains("completadas") || // AGREGADO
+                estadoLimpio.contains("done") ||
+                estadoLimpio.contains("terminado") ||
+                estadoLimpio.contains("terminadas") || // AGREGADO
+                estadoLimpio.contains("complete")) {
+            return "✅"; // Palomita verde
+        }
+
+        // Patrones para en proceso
+        if (estadoLimpio.contains("proceso") ||
+                estadoLimpio.contains("progreso") ||
+                estadoLimpio.contains("doing") ||
+                estadoLimpio.contains("progress")) {
+            return "🔄"; // Flecha circular
+        }
+
+        // Patrones para pendiente
+        if (estadoLimpio.contains("pendiente") ||
+                estadoLimpio.contains("pendientes") || // AGREGADO
+                estadoLimpio.contains("to do") ||
+                estadoLimpio.contains("todo") ||
+                estadoLimpio.contains("por hacer") ||
+                estadoLimpio.contains("backlog")) {
+            return "⏸️"; // Pausa
+        }
+
+        // Patrones para cancelado
+        if (estadoLimpio.contains("cancelado") ||
+                estadoLimpio.contains("canceladas") || // AGREGADO
+                estadoLimpio.contains("cancelled") ||
+                estadoLimpio.contains("canceled")) {
+            return "❌"; // X roja
+        }
+
+        // Patrones para revisión
+        if (estadoLimpio.contains("revision") ||
+                estadoLimpio.contains("review") ||
+                estadoLimpio.contains("testing")) {
+            return "👁️"; // Ojo
+        }
+        return "❓";
+    }
+
+    // Método corregido para colores - mismo patrón
+    private String obtenerColorPorEstado(String estado) {
+        if (estado == null) return "#6c757d";
+
+        String estadoLimpio = estado.toLowerCase().trim();
+
+        // Patrones para completado - CORREGIDO
+        if (estadoLimpio.contains("completado") ||
+                estadoLimpio.contains("completadas") || // AGREGADO
+                estadoLimpio.contains("done") ||
+                estadoLimpio.contains("terminado") ||
+                estadoLimpio.contains("terminadas") || // AGREGADO
+                estadoLimpio.contains("complete")) {
+            return "#28a745"; // Verde
+        }
+
+        // Patrones para en proceso
+        if (estadoLimpio.contains("proceso") ||
+                estadoLimpio.contains("progreso") ||
+                estadoLimpio.contains("doing") ||
+                estadoLimpio.contains("progress")) {
+            return "#ffc107"; // Amarillo/Naranja
+        }
+
+        // Patrones para pendiente
+        if (estadoLimpio.contains("pendiente") ||
+                estadoLimpio.contains("pendientes") || // AGREGADO
+                estadoLimpio.contains("to do") ||
+                estadoLimpio.contains("todo") ||
+                estadoLimpio.contains("por hacer") ||
+                estadoLimpio.contains("backlog")) {
+            return "#dc3545"; // Rojo
+        }
+
+        // Patrones para cancelado
+        if (estadoLimpio.contains("cancelado") ||
+                estadoLimpio.contains("canceladas") || // AGREGADO
+                estadoLimpio.contains("cancelled") ||
+                estadoLimpio.contains("canceled")) {
+            return "#6c757d"; // Gris
+        }
+
+        // Patrones para revisión
+        if (estadoLimpio.contains("revision") ||
+                estadoLimpio.contains("review") ||
+                estadoLimpio.contains("testing")) {
+            return "#17a2b8"; // Azul
+        }
+
+        return "#6c757d"; // Gris por defecto
+    }
+
+
+
+    // Método para obtener el nombre de la columna por ID
+    private final java.util.Map<Integer, String> columnasCache = new java.util.HashMap<>();
+
+    private String obtenerNombreColumnaPorId(int columnaId) {
+        if (tableroActual == null) return "Sin asignar";
+
+        // Usar caché para evitar consultas repetidas
+        if (columnasCache.containsKey(columnaId)) {
+            return columnasCache.get(columnaId);
+        }
+
+        try {
+            List<Column> columnas = BoardDAO.obtenerColumnasPorTablero(tableroActual.getId());
+
+            // Llenar caché
+            for (Column col : columnas) {
+                columnasCache.put(col.getId(), col.getNombre());
+            }
+
+            return columnasCache.getOrDefault(columnaId, "Desconocido");
+        } catch (Exception e) {
+            System.err.println("Error obteniendo nombre de columna: " + e.getMessage());
+            return "Error";
+        }
     }
 
     private void ocultarTodosPaneles() {
@@ -217,19 +407,17 @@ public class AdminController implements Initializable {
             return;
         }
 
+        // Limpiar caché al cambiar tablero
+        columnasCache.clear();
+
         tablerosPanel.setVisible(false);
         tablerosPanel.setManaged(false);
-        tableroActualLabel.setText("Mi tablero de " + tableroActual.getNombre());
+        tableroActualLabel.setText("Cargando tablero de " + tableroActual.getNombre() + "...");
         cargarTarjetasTablero();
         tarjetasPanel.setVisible(true);
         tarjetasPanel.setManaged(true);
     }
 
-    @FXML
-    private void volverATableros() {
-        cambiarPanel(tablerosPanel, "Gestión de Tableros");
-        cargarTableros();
-    }
 
     @FXML
     private void crearTarjeta() {
@@ -291,12 +479,31 @@ public class AdminController implements Initializable {
         );
     }
 
+    // Método optimizado para cargar tarjetas con información completa
     private void cargarTarjetasTablero() {
         if (tableroActual == null) return;
 
+         // Agregar esta línea temporalmente
+
         ejecutarTareaAsincrona(
-                () -> CardDAO.obtenerTarjetasPorTablero(tableroActual.getId()),
-                tarjetas -> tarjetasTableView.setItems(FXCollections.observableArrayList(tarjetas))
+                () -> {
+                    List<Card> tarjetas = CardDAO.obtenerTarjetasPorTablero(tableroActual.getId());
+                    return tarjetas;
+                },
+                tarjetas -> {
+                    tarjetasTableView.setItems(FXCollections.observableArrayList(tarjetas));
+                    // Actualizar el label con información adicional
+                    long completadas = tarjetas.stream()
+                            .filter(t -> "Completado".equals(obtenerNombreColumnaPorId(t.getColumnaId())))
+                            .count();
+
+                    tableroActualLabel.setText(String.format(
+                            "Tablero: %s (%d tarjetas, %d completadas)",
+                            tableroActual.getNombre(),
+                            tarjetas.size(),
+                            completadas
+                    ));
+                }
         );
     }
 
@@ -488,7 +695,7 @@ public class AdminController implements Initializable {
     private void cerrarSesion(ActionEvent event) {
         try {
             Auth.cerrarSesion();
-            App.app.setLoginScene(); // Usar setLoginScene() que ya existe
+            App.app.setLoginScene();
 
         } catch (Exception e) {
             System.err.println("Error al cerrar sesión: " + e.getMessage());
@@ -506,5 +713,21 @@ public class AdminController implements Initializable {
     @FunctionalInterface
     private interface ResultHandler<T> {
         void handle(T result);
+    }
+
+
+    private void debugColumnNames() {
+        if (tableroActual == null) return;
+
+        try {
+            List<Column> columnas = BoardDAO.obtenerColumnasPorTablero(tableroActual.getId());
+            System.out.println("Columnas encontradas para el tablero " + tableroActual.getId() + ":");
+            for (Column col : columnas) {
+                System.out.println("- ID: " + col.getId() + ", Nombre: '" + col.getNombre() + "'");
+            }
+        } catch (Exception e) {
+            System.err.println("Error obteniendo columnas: " + e.getMessage());
+
+        }
     }
 }

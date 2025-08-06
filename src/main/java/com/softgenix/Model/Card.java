@@ -162,4 +162,6 @@ public class Card {
     public String toString() {
         return titulo != null ? titulo : "Tarjeta sin título";
     }
+
+
 }

@@ -13,7 +13,7 @@
         <?import javafx.scene.text.Font?>
         <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<StackPane alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.LoginController" stylesheets="@/Styles/Login.css">
+<StackPane alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.softgenix.Controller.LoginController" stylesheets="@/Styles/Login.css">
     <children>
         <HBox alignment="CENTER">
             <children>

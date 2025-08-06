@@ -52,8 +52,8 @@ public class App extends Application {
             stageWindow.setResizable(false);
 
             // FORZAR el tamaño del login (800x600 según tu Login.fxml)
-            stageWindow.setWidth(800.0);
-            stageWindow.setHeight(600.0);
+            stageWindow.setWidth(825.0);
+            stageWindow.setHeight(625.0);
 
             stageWindow.centerOnScreen();
         }

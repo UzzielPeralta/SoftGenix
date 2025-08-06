@@ -12,6 +12,8 @@ import com.softgenix.Model.User;
 import com.softgenix.Service.BoardService;
 import com.softgenix.Service.UserService;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -21,10 +23,30 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class SuperAdminController implements Initializable {
+
+    private static int contadorTemporalUsuarios = -1;
+    private static int contadorTemporalTableros = -1;
+
+    private int generarIdTemporalUsuario() {
+        return contadorTemporalUsuarios--;
+    }
+    private int generarIdTemporalTablero() {
+        return contadorTemporalTableros--;
+    }
+
+    // Cache para mejorar rendimiento
+    private ObservableList<User> usuariosCache;
+    private ObservableList<Board> tablerosCache;
+    private Map<Integer, ObservableList<Card>> tarjetasCache;
+    private long ultimaActualizacionUsuarios;
+    private long ultimaActualizacionTableros;
+    private static final long TIEMPO_CACHE = 30000; // 30 segundos
 
     @FXML
     private TextField emailField;
@@ -65,33 +87,103 @@ public class SuperAdminController implements Initializable {
     @FXML
     private Button addListBtn;
 
+    // Elementos UI para asignación de tableros
+    @FXML private AnchorPane asignacionPanel;
+    @FXML private ComboBox<String> tablerosComboBox;
+    @FXML private TableView<User> usuariosDisponiblesTable;
+    @FXML private TableColumn<User, Integer> idUsuarioColumn;
+    @FXML private TableColumn<User, String> nombreUsuarioColumn;
+    @FXML private TableColumn<User, String> emailUsuarioColumn;
+    @FXML private TableView<User> usuariosAsignadosTable;
+    @FXML private TableColumn<User, Integer> idAsignadoColumn;
+    @FXML private TableColumn<User, String> nombreAsignadoColumn;
+    @FXML private TableColumn<User, String> emailAsignadoColumn;
+
+    // Elementos UI para tableros
+    @FXML private TextField tableroNombreField;
+    @FXML private TextArea tableroDescripcionField;
+    @FXML private TableView<Board> tablerosTableView;
+    @FXML private TableColumn<Board, Integer> tableroIdColumn;
+    @FXML private TableColumn<Board, String> tableroNombreColumn;
+    @FXML private TableColumn<Board, String> tableroDescripcionColumn;
+
+    // Variables para el panel de tarjetas
+    @FXML private AnchorPane tarjetasPanel;
+    @FXML private Label tableroActualLabel;
+    @FXML private TextField tarjetaTituloField;
+    @FXML private TextArea tarjetaDescripcionField;
+    @FXML private TableView<Card> tarjetasTableView;
+    @FXML private TableColumn<Card, String> tarjetaTituloColumn;
+    @FXML private TableColumn<Card, String> tarjetaDescripcionColumn;
+
+    // Tablero seleccionado actualmente
+    private Board tableroActual;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Configurar columnas de la tabla
+        // Configurar todas las columnas una sola vez
+        configurarColumnasTablas();
+
+        // Inicializar cache
+        usuariosCache = FXCollections.observableArrayList();
+        tablerosCache = FXCollections.observableArrayList();
+        tarjetasCache = new HashMap<>();
+    }
+
+    /**
+     * Configura todas las columnas de las tablas una sola vez
+     */
+    private void configurarColumnasTablas() {
+        // Usuarios
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         rolColumn.setCellValueFactory(new PropertyValueFactory<>("rol"));
+
+        // Tableros
+        if (tableroIdColumn != null) {
+            tableroIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+            tableroNombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+            tableroDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        }
+
+        // Tarjetas
+        if (tarjetaTituloColumn != null) {
+            tarjetaTituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+            tarjetaDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        }
+
+        // Usuarios disponibles y asignados
+        if (idUsuarioColumn != null) {
+            idUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+            nombreUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+            emailUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        }
+
+        if (idAsignadoColumn != null) {
+            idAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+            nombreAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+            emailAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        }
     }
 
     /**
-     * Método para ocultar todos los paneles
+     * Método optimizado para ocultar todos los paneles
      */
     private void ocultarTodosPaneles() {
-        welcomePanel.setVisible(false);
-        welcomePanel.setManaged(false);
+        AnchorPane[] paneles = {usuariosPanel, tablerosPanel, tarjetasPanel, asignacionPanel};
 
-        usuariosPanel.setVisible(false);
-        usuariosPanel.setManaged(false);
+        for (AnchorPane panel : paneles) {
+            if (panel != null) {
+                panel.setVisible(false);
+                panel.setManaged(false);
+            }
+        }
 
-        tablerosPanel.setVisible(false);
-        tablerosPanel.setManaged(false);
-
-        tarjetasPanel.setVisible(false);
-        tarjetasPanel.setManaged(false);
-
-        asignacionPanel.setVisible(false);
-        asignacionPanel.setManaged(false);
+        if (welcomePanel != null) {
+            welcomePanel.setVisible(false);
+            welcomePanel.setManaged(false);
+        }
     }
 
     public void mostrarGestionTableros() {
@@ -99,6 +191,7 @@ public class SuperAdminController implements Initializable {
         headerTitleLabel.setText("Gestión de Tableros");
         tablerosPanel.setVisible(true);
         tablerosPanel.setManaged(true);
+        cargarTableros();
     }
 
     public void mostrarGestionUsuarios() {
@@ -106,41 +199,93 @@ public class SuperAdminController implements Initializable {
         headerTitleLabel.setText("Gestión de Admin");
         usuariosPanel.setVisible(true);
         usuariosPanel.setManaged(true);
-
-        // Cargar usuarios existentes al mostrar el panel
         cargarUsuarios();
     }
 
+    /**
+     * Método optimizado para crear usuario con validación previa
+     */
     @FXML
     private void crearUsuario(ActionEvent event) {
-        String email = emailField.getText();
+        if (!validarCamposUsuario()) return;
+
+        String email = emailField.getText().trim();
         String password = passwordField.getText();
-        String nombre = nombreField.getText();
+        String nombre = nombreField.getText().trim();
         String rol = "ADMIN";
 
-        System.out.println("Intentando crear admnin: " + nombre + ", " + email);
+        // Crear usuario temporal inmediatamente
+        User usuarioTemporal = new User();
+        usuarioTemporal.setNombre(nombre);
+        usuarioTemporal.setEmail(email);
+        usuarioTemporal.setRol(rol);
+        // ID temporal más pequeño
+        usuarioTemporal.setId(Math.abs(email.hashCode() % 100000));
+
+        // Agregar inmediatamente a la tabla
+        usuariosCache.add(usuarioTemporal);
+
+        // Limpiar formulario inmediatamente
+        limpiarFormulario();
+
+        Task<User> task = new Task<User>() {
+            @Override
+            protected User call() throws Exception {
+                boolean creado = UserService.crearUsuario(email, password, nombre, rol);
+                if (creado) {
+                    // Obtener el usuario real
+                    List<User> todosUsuarios = UserService.obtenerUsuariosPorRol("ADMIN");
+                    return todosUsuarios.stream()
+                            .filter(u -> u.getEmail().equals(email))
+                            .reduce((first, second) -> second) // Obtener el más reciente
+                            .orElse(null);
+                }
+                return null;
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            User usuarioReal = task.getValue();
+            if (usuarioReal != null) {
+                // Reemplazar temporal con real
+                int index = usuariosCache.indexOf(usuarioTemporal);
+                if (index >= 0) {
+                    usuariosCache.set(index, usuarioReal);
+                }
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin creado correctamente");
+            } else {
+                // Si falló, remover temporal
+                usuariosCache.remove(usuarioTemporal);
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el admin");
+            }
+        });
+
+        task.setOnFailed(e -> {
+            usuariosCache.remove(usuarioTemporal);
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
+    }
+    /**
+     * Validación de campos de usuario
+     */
+    private boolean validarCamposUsuario() {
+        String email = emailField.getText().trim();
+        String password = passwordField.getText();
+        String nombre = nombreField.getText().trim();
 
         if (email.isEmpty() || password.isEmpty() || nombre.isEmpty()) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "Todos los campos son obligatorios");
-            return;
+            return false;
         }
 
-        try {
-            boolean creado = UserService.crearUsuario(email, password, nombre, rol);
-            System.out.println("Resultado: " + creado);
-
-            if (creado) {
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin creado correctamente");
-                limpiarFormulario();
-                cargarUsuarios();
-            } else {
-                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el admin");
-            }
-        } catch (Exception e) {
-            System.err.println("Excepción: " + e.getMessage());
-            e.printStackTrace();
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error: " + e.getMessage());
+        if (!email.contains("@")) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Email inválido");
+            return false;
         }
+
+        return true;
     }
 
     @FXML
@@ -151,38 +296,80 @@ public class SuperAdminController implements Initializable {
             return;
         }
 
-        // Solo permitir eliminar usuarios tipo USER
+        // Solo permitir eliminar usuarios tipo ADMIN
         if (!"ADMIN".equals(usuarioSeleccionado.getRol())) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Solo puede eliminar admin con rol USER");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Solo puede eliminar admin con rol ADMIN");
             return;
         }
 
-        boolean eliminado = UserService.eliminarUsuario(usuarioSeleccionado.getId());
-        if (eliminado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin eliminado correctamente");
-            cargarUsuarios();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el admin");
-        }
-    }
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return UserService.eliminarUsuario(usuarioSeleccionado.getId());
+            }
+        };
 
+        task.setOnSucceeded(e -> {
+            if (task.getValue()) {
+                // Eliminar directamente del cache sin recargar toda la tabla
+                usuariosCache.remove(usuarioSeleccionado);
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin eliminado correctamente");
+            } else {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el admin");
+            }
+        });
+
+        task.setOnFailed(e -> {
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error al eliminar: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
+    }
     @FXML
     private void cerrarSesion(ActionEvent event) {
         try {
             Auth.cerrarSesion();
-            App.app.setLoginScene(); // Cambiar setScene por setLoginScene
-
+            App.app.setLoginScene();
         } catch (Exception e) {
             System.err.println("Error al cerrar sesión: " + e.getMessage());
             Auth.cerrarSesion();
-            App.app.setLoginScene(); // También aquí
+            App.app.setLoginScene();
         }
     }
 
+    /**
+     * Método optimizado para cargar usuarios con cache
+     */
     private void cargarUsuarios() {
-        // Solo cargar usuarios tipo USER
-        List<User> usuarios = UserService.obtenerUsuariosPorRol("ADMIN");
-        usuariosTableView.setItems(FXCollections.observableArrayList(usuarios));
+        long tiempoActual = System.currentTimeMillis();
+
+        // Usar cache si es reciente
+        if (usuariosCache != null && !usuariosCache.isEmpty() &&
+                (tiempoActual - ultimaActualizacionUsuarios) < TIEMPO_CACHE) {
+            usuariosTableView.setItems(usuariosCache);
+            return;
+        }
+
+        // Cargar de base de datos en hilo separado
+        Task<List<User>> task = new Task<List<User>>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return UserService.obtenerUsuariosPorRol("ADMIN");
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<User> usuarios = task.getValue();
+            // Actualizar cache manteniendo la referencia de la tabla
+            usuariosCache.setAll(usuarios); // Usar setAll en lugar de clear/addAll
+            ultimaActualizacionUsuarios = tiempoActual;
+        });
+
+        task.setOnFailed(e -> {
+            System.err.println("Error al cargar usuarios: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 
     private void limpiarFormulario() {
@@ -198,108 +385,138 @@ public class SuperAdminController implements Initializable {
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
-    // Elementos UI para asignación de tableros
-    @FXML private AnchorPane asignacionPanel;
-    @FXML private ComboBox<String> tablerosComboBox;
-    @FXML private TableView<User> usuariosDisponiblesTable;
-    @FXML private TableColumn<User, Integer> idUsuarioColumn;
-    @FXML private TableColumn<User, String> nombreUsuarioColumn;
-    @FXML private TableColumn<User, String> emailUsuarioColumn;
-    @FXML private TableView<User> usuariosAsignadosTable;
-    @FXML private TableColumn<User, Integer> idAsignadoColumn;
-    @FXML private TableColumn<User, String> nombreAsignadoColumn;
-    @FXML private TableColumn<User, String> emailAsignadoColumn;
 
-
-
-
+    /**
+     * Método optimizado para cargar usuarios disponibles
+     */
     private void cargarUsuariosDisponibles() {
-        List<User> usuarios = UserService.obtenerUsuariosPorRol("ADMIN");
+        Task<List<User>> task = new Task<List<User>>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return UserService.obtenerUsuariosPorRol("ADMIN");
+            }
+        };
 
-        // Configurar columnas de la tabla
-        idUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nombreUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        emailUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        task.setOnSucceeded(e -> {
+            List<User> usuarios = task.getValue();
+            usuariosDisponiblesTable.getItems().clear();
+            usuariosDisponiblesTable.getItems().addAll(usuarios);
+        });
 
-        // Configurar columnas de la tabla de asignados
-        idAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nombreAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        emailAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-
-        usuariosDisponiblesTable.getItems().clear();
-        usuariosDisponiblesTable.getItems().addAll(usuarios);
+        new Thread(task).start();
     }
-
-
-
-    // Elementos UI para tableros
-    @FXML private TextField tableroNombreField;
-    @FXML private TextArea tableroDescripcionField;
-    @FXML private TableView<Board> tablerosTableView;
-    @FXML private TableColumn<Board, Integer> tableroIdColumn;
-    @FXML private TableColumn<Board, String> tableroNombreColumn;
-    @FXML private TableColumn<Board, String> tableroDescripcionColumn;
 
     @FXML
     private void mostrarGestionTableros(ActionEvent event) {
-        // Usar el método que oculta correctamente todos los paneles
         ocultarTodosPaneles();
-
-        // Mostrar panel de tableros
         tablerosPanel.setVisible(true);
         tablerosPanel.setManaged(true);
-
-        // Cambiar título
         headerTitleLabel.setText("Gestión de Tableros");
-
-        // Configurar columnas si no se ha hecho antes
-        if (tableroIdColumn.getCellValueFactory() == null) {
-            tableroIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-            tableroNombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-            tableroDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
-        }
-
-        // Cargar tableros existentes
         cargarTableros();
-    }
-    private void cargarTableros() {
-        List<Board> tableros = BoardService.obtenerTablerosUsuario();
-        tablerosTableView.setItems(FXCollections.observableArrayList(tableros));
     }
 
     /**
-     * Crea un nuevo tablero
+     * Método optimizado para cargar tableros con cache
+     */
+    private void cargarTableros() {
+        long tiempoActual = System.currentTimeMillis();
+
+        if (tablerosCache != null && !tablerosCache.isEmpty() &&
+                (tiempoActual - ultimaActualizacionTableros) < TIEMPO_CACHE) {
+            tablerosTableView.setItems(tablerosCache); // Corregido: era usuariosTableView
+            return;
+        }
+
+        Task<List<Board>> task = new Task<List<Board>>() {
+            @Override
+            protected List<Board> call() throws Exception {
+                return BoardService.obtenerTablerosUsuario();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<Board> tableros = task.getValue();
+            tablerosCache.setAll(tableros);
+            ultimaActualizacionTableros = tiempoActual;
+        });
+
+        task.setOnFailed(e -> {
+            System.err.println("Error al cargar tableros: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
+    }
+
+    /**
+     * Crea un nuevo tablero optimizado
      */
     @FXML
     private void crearTablero() {
-        String nombre = tableroNombreField.getText();
-        String descripcion = tableroDescripcionField.getText();
+        String nombre = tableroNombreField.getText().trim();
+        String descripcion = tableroDescripcionField.getText().trim();
 
         if (nombre.isEmpty()) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "El nombre del tablero es obligatorio");
             return;
         }
 
-        try {
-            // Obtener el usuario actual como propietario
-            int propietarioId = Auth.getUsuarioActual().getId();
-            boolean creado = BoardService.crearTablero(nombre, descripcion, propietarioId);
+        // Crear tablero temporal inmediatamente para la UI
+        Board tableroTemporal = new Board();
+        tableroTemporal.setNombre(nombre);
+        tableroTemporal.setDescripcion(descripcion);
+        tableroTemporal.setPropietarioId(Auth.getUsuarioActual().getId());
+        // ID temporal más pequeño usando hash
+        tableroTemporal.setId(Math.abs(nombre.hashCode() % 100000));
 
-            if (creado) {
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero creado correctamente");
-                tableroNombreField.clear();
-                tableroDescripcionField.clear();
-                cargarTableros(); // Recargar inmediatamente la tabla
-            } else {
-                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el tablero");
+        // Agregar inmediatamente a la tabla
+        tablerosCache.add(tableroTemporal);
+
+        // Limpiar campos inmediatamente
+        tableroNombreField.clear();
+        tableroDescripcionField.clear();
+
+        // Crear en base de datos en segundo plano
+        Task<Board> task = new Task<Board>() {
+            @Override
+            protected Board call() throws Exception {
+                int propietarioId = Auth.getUsuarioActual().getId();
+                boolean creado = BoardService.crearTablero(nombre, descripcion, propietarioId);
+                if (creado) {
+                    // Obtener el tablero real con ID correcto
+                    List<Board> todosTableros = BoardService.obtenerTablerosUsuario();
+                    return todosTableros.stream()
+                            .filter(t -> t.getNombre().equals(nombre) && t.getPropietarioId() == propietarioId)
+                            .reduce((first, second) -> second) // Obtener el más reciente
+                            .orElse(null);
+                }
+                return null;
             }
-        } catch (Exception e) {
-            System.err.println("Error al crear tablero: " + e.getMessage());
-            e.printStackTrace();
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error inesperado: " + e.getMessage());
-        }
-    }
+        };
 
+        task.setOnSucceeded(e -> {
+            Board tableroReal = task.getValue();
+            if (tableroReal != null) {
+                // Reemplazar el temporal con el real
+                int index = tablerosCache.indexOf(tableroTemporal);
+                if (index >= 0) {
+                    tablerosCache.set(index, tableroReal);
+                }
+
+            } else {
+                // Si falló, remover el temporal
+                tablerosCache.remove(tableroTemporal);
+
+            }
+        });
+
+        task.setOnFailed(e -> {
+            // Si falló, remover el temporal
+            tablerosCache.remove(tableroTemporal);
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error inesperado: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
+    }
     /**
      * Elimina el tablero seleccionado
      */
@@ -311,35 +528,60 @@ public class SuperAdminController implements Initializable {
             return;
         }
 
-        boolean eliminado = BoardService.eliminarTablero(tableroSeleccionado.getId());
-        if (eliminado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero eliminado correctamente");
-            cargarTableros();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el tablero");
-        }
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return BoardService.eliminarTablero(tableroSeleccionado.getId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            if (task.getValue()) {
+                // Eliminar directamente del cache sin recargar
+                tablerosCache.remove(tableroSeleccionado);
+                tarjetasCache.remove(tableroSeleccionado.getId());
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero eliminado correctamente");
+            } else {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el tablero");
+            }
+        });
+
+        task.setOnFailed(e -> {
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error al eliminar: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
-    // Variables para el panel de tarjetas
-    @FXML private AnchorPane tarjetasPanel;
-    @FXML private Label tableroActualLabel;
-    @FXML private TextField tarjetaTituloField;
-    @FXML private TextArea tarjetaDescripcionField;
-    @FXML private TableView<Card> tarjetasTableView;
-    @FXML private TableColumn<Card, String> tarjetaTituloColumn;
-    @FXML private TableColumn<Card, String> tarjetaDescripcionColumn;
-
-    // Tablero seleccionado actualmente
-    private Board tableroActual;
-
 
     /**
-     * Carga las tarjetas del tablero actual
+     * Carga las tarjetas del tablero actual con cache
      */
     private void cargarTarjetasTablero() {
         if (tableroActual == null) return;
 
-        List<Card> tarjetas = CardDAO.obtenerTarjetasPorTablero(tableroActual.getId());
-        tarjetasTableView.setItems(FXCollections.observableArrayList(tarjetas));
+        int tableroId = tableroActual.getId();
+
+        // Verificar cache de tarjetas para este tablero
+        if (tarjetasCache.containsKey(tableroId)) {
+            tarjetasTableView.setItems(tarjetasCache.get(tableroId));
+            return;
+        }
+
+        Task<List<Card>> task = new Task<List<Card>>() {
+            @Override
+            protected List<Card> call() throws Exception {
+                return CardDAO.obtenerTarjetasPorTablero(tableroId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<Card> tarjetas = task.getValue();
+            ObservableList<Card> tarjetasObservable = FXCollections.observableArrayList(tarjetas);
+            tarjetasCache.put(tableroId, tarjetasObservable);
+            tarjetasTableView.setItems(tarjetasObservable);
+        });
+
+        new Thread(task).start();
     }
 
     /**
@@ -349,37 +591,46 @@ public class SuperAdminController implements Initializable {
     private void crearTarjeta() {
         if (tableroActual == null) return;
 
-        String titulo = tarjetaTituloField.getText();
-        String descripcion = tarjetaDescripcionField.getText();
+        String titulo = tarjetaTituloField.getText().trim();
+        String descripcion = tarjetaDescripcionField.getText().trim();
 
         if (titulo.isEmpty()) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "El título de la tarjeta es obligatorio");
             return;
         }
 
-        // Obtener o crear una columna predeterminada
-        int columnaId = obtenerColumnaPreterminada(tableroActual.getId());
-        if (columnaId == -1) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear una columna para la tarjeta");
-            return;
-        }
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                // Obtener o crear una columna predeterminada
+                int columnaId = obtenerColumnaPreterminada(tableroActual.getId());
+                if (columnaId == -1) {
+                    return false;
+                }
 
-        Card tarjeta = new Card();
-        tarjeta.setTitulo(titulo);
-        tarjeta.setDescripcion(descripcion);
-        tarjeta.setColumnaId(columnaId);
-        tarjeta.setCreadoPorUsuarioId(Auth.getUsuarioActual().getId());
+                Card tarjeta = new Card();
+                tarjeta.setTitulo(titulo);
+                tarjeta.setDescripcion(descripcion);
+                tarjeta.setColumnaId(columnaId);
+                tarjeta.setCreadoPorUsuarioId(Auth.getUsuarioActual().getId());
 
-        boolean creado = CardDAO.crearTarjeta(tarjeta);
+                return CardDAO.crearTarjeta(tarjeta);
+            }
+        };
 
-        if (creado) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tarjeta creada correctamente");
-            tarjetaTituloField.clear();
-            tarjetaDescripcionField.clear();
-            cargarTarjetasTablero();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear la tarjeta");
-        }
+        task.setOnSucceeded(e -> {
+            if (task.getValue()) {
+                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tarjeta creada correctamente");
+                tarjetaTituloField.clear();
+                tarjetaDescripcionField.clear();
+                invalidarCacheTarjetas(tableroActual.getId());
+                cargarTarjetasTablero();
+            } else {
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear la tarjeta");
+            }
+        });
+
+        new Thread(task).start();
     }
 
     /**
@@ -401,5 +652,26 @@ public class SuperAdminController implements Initializable {
         }
 
         return -1; // Error
+    }
+
+    /**
+     * Métodos utilitarios para invalidar cache
+     */
+    private void invalidarCacheUsuarios() {
+        ultimaActualizacionUsuarios = 0;
+        if (usuariosCache != null) {
+            usuariosCache.clear();
+        }
+    }
+
+    private void invalidarCacheTableros() {
+        ultimaActualizacionTableros = 0;
+        if (tablerosCache != null) {
+            tablerosCache.clear();
+        }
+    }
+
+    private void invalidarCacheTarjetas(int tableroId) {
+        tarjetasCache.remove(tableroId);
     }
 }
