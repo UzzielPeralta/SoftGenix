@@ -52,7 +52,7 @@ public class BoardAssignmentDAO {
     }
 
     /**
-     * Optimización del método obtenerTablerosAsignadosAUsuario
+     * ObtenerTablerosAsignadosAUsuario
      */
     public static List<Board> obtenerTablerosAsignadosAUsuario(int usuarioId) {
         List<Board> tableros = new ArrayList<>();
@@ -76,7 +76,7 @@ public class BoardAssignmentDAO {
     }
 
     /**
-     * Optimización del método obtenerUsuariosAsignadosATablero
+     * método obtenerUsuariosAsignadosATablero
      */
     public static List<User> obtenerUsuariosAsignadosATablero(int tableroId) {
         List<User> usuarios = new ArrayList<>();
@@ -99,9 +99,7 @@ public class BoardAssignmentDAO {
         return usuarios;
     }
 
-    /**
-     * Método optimizado para asignaciones múltiples (batch)
-     */
+
     public static boolean asignarTableroAMultiplesUsuarios(int tableroId, List<Integer> usuarioIds) {
         try (Connection conn = Database.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(ASIGNAR_TABLERO_SQL)) {
@@ -130,9 +128,7 @@ public class BoardAssignmentDAO {
         }
     }
 
-    /**
-     * Optimización de métodos existentes
-     */
+
     public static boolean asignarTableroAUsuario(int tableroId, int usuarioId) {
         try (Connection conn = Database.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(ASIGNAR_TABLERO_SQL)) {
@@ -166,7 +162,6 @@ public class BoardAssignmentDAO {
     }
     /**
      * Elimina todas las asignaciones de tablero de un usuario específico
-     * Necesario antes de eliminar un usuario del sistema
      */
     public static boolean eliminarTodasAsignacionesDeUsuario(int usuarioId) {
         String sql = "DELETE FROM ASIGNACIONES_TABLERO WHERE USUARIO_ID = ?";
@@ -178,7 +173,7 @@ public class BoardAssignmentDAO {
             int filasAfectadas = pstmt.executeUpdate();
 
             System.out.println("Asignaciones eliminadas para usuario " + usuarioId + ": " + filasAfectadas);
-            return true; // Retorna true aunque no haya asignaciones (0 filas)
+            return true;
 
         } catch (SQLException e) {
             System.err.println("Error al eliminar asignaciones de usuario: " + e.getMessage());

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class UserDAO {
 
-    // Constantes SQL para mejor rendimiento
+    // Constantes SQL
     private static final String EXISTE_EMAIL_SQL = "SELECT 1 FROM USUARIOS WHERE EMAIL = ?";
     private static final String CREAR_USUARIO_SQL = "INSERT INTO USUARIOS (EMAIL, CONTRASENA, NOMBRE, ROL) VALUES (?, ?, ?, ?)";
     private static final String OBTENER_TODOS_SQL = "SELECT ID, EMAIL, CONTRASENA, NOMBRE, ROL FROM USUARIOS ORDER BY ID";
@@ -21,9 +21,7 @@ public class UserDAO {
     private static final String OBTENER_POR_CREDENCIALES_SQL = "SELECT ID, EMAIL, CONTRASENA, NOMBRE, ROL FROM USUARIOS WHERE EMAIL = ? AND CONTRASENA = ?";
     private static final String ELIMINAR_USUARIO_SQL = "DELETE FROM USUARIOS WHERE ID = ?";
 
-    /**
-     * Método helper para mapear ResultSet a User
-     */
+
     private static User mapearUsuario(ResultSet rs) throws SQLException {
         User usuario = new User();
         usuario.setId(rs.getInt("ID"));
@@ -35,7 +33,7 @@ public class UserDAO {
     }
 
     /**
-     * Verifica si ya existe un usuario con el email proporcionado
+     * Verifica si ya existe un usuario con el email
      */
     public static boolean existeEmail(String email) {
         try (Connection conn = Database.getConnection();
@@ -164,7 +162,7 @@ public class UserDAO {
     }
 
     /**
-     * Elimina un usuario por su ID (con limpieza completa de asignaciones)
+     * Elimina un usuario por su ID
      */
     public static boolean eliminarUsuario(int userId) {
         try (Connection conn = Database.getConnection()) {

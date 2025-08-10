@@ -21,9 +21,7 @@ public class CardDAO {
     private static final String ELIMINAR_TARJETA_SQL = "DELETE FROM TARJETAS WHERE ID = ?";
     private static final String ACTUALIZAR_COLUMNA_SQL = "UPDATE TARJETAS SET COLUMNA_ID = ? WHERE ID = ?";
 
-    /**
-     * Método helper para mapear ResultSet a Card
-     */
+
     private static Card mapearTarjeta(ResultSet rs) throws SQLException {
         Card tarjeta = new Card();
         tarjeta.setId(rs.getInt("ID"));
@@ -41,7 +39,7 @@ public class CardDAO {
     }
 
     /**
-     * Optimización del método obtenerTarjetasPorColumna
+     * método obtenerTarjetasPorColumna
      */
     public static List<Card> obtenerTarjetasPorColumna(int columnaId) {
         List<Card> tarjetas = new ArrayList<>();
@@ -65,7 +63,7 @@ public class CardDAO {
     }
 
     /**
-     * Optimización del método obtenerTarjetasPorTablero con una sola consulta SQL
+     * obtenerTarjetasPorTablero con una sola consulta SQL
      */
     public static List<Card> obtenerTarjetasPorTablero(int tableroId) {
         List<Card> tarjetas = new ArrayList<>();
@@ -92,7 +90,7 @@ public class CardDAO {
         return tarjetas;
     }
 
-    // Los demás métodos permanecen igual pero con mejor manejo de errores
+
     public static boolean crearTarjeta(Card tarjeta) {
         try (Connection conn = Database.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(CREAR_TARJETA_SQL)) {

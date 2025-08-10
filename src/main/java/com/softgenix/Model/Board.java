@@ -87,7 +87,6 @@ public class Board {
         return id + " - " + nombre;
     }
 
-    // Para ComboBox con información adicional
     public String getDisplayText() {
         return String.format("%s (%s)", nombre, getDescripcionCorta());
     }
@@ -107,6 +106,6 @@ public class Board {
 
     @Override
     public String toString() {
-        return nombre; // Para mostrar en ComboBox
+        return nombre;
     }
 }

@@ -12,7 +12,7 @@ public class Card {
     private LocalDateTime fechaCreacion;
     private int creadoPorUsuarioId;
 
-    // Constantes para prioridades
+    // Constantes
     public static final String PRIORIDAD_ALTA = "Alta";
     public static final String PRIORIDAD_MEDIA = "Media";
     public static final String PRIORIDAD_BAJA = "Baja";

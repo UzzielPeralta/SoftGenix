@@ -2,7 +2,6 @@ package com.softgenix.Controller;
 
 import com.softgenix.App.App;
 import com.softgenix.App.Utils.Auth;
-import com.softgenix.App.Utils.Path;
 import com.softgenix.Model.Board;
 import com.softgenix.Service.BoardService;
 import javafx.concurrent.Task;
@@ -34,7 +33,7 @@ public class TaskViewerController implements Initializable {
     @FXML private ScrollPane tableroScrollPane;
     @FXML private HBox columnasContainer;
 
-    // Cache para evitar recargas
+
     private int ultimoTableroMostrado = -1;
 
     @Override
@@ -136,7 +135,7 @@ public class TaskViewerController implements Initializable {
         tituloColumna.getStyleClass().add("column-title");
         columnaBox.getChildren().add(tituloColumna);
 
-        // Cargar tarjetas de forma optimizada
+        // Cargar tarjetas
         cargarTarjetasColumna(columna, columnaBox);
 
         return columnaBox;
@@ -191,12 +190,12 @@ public class TaskViewerController implements Initializable {
     private void cerrarSesion(ActionEvent event) {
         try {
             Auth.cerrarSesion();
-            App.app.setLoginScene(); // Cambiar setScene por setLoginScene
+            App.app.setLoginScene();
 
         } catch (Exception e) {
             System.err.println("Error al cerrar sesión: " + e.getMessage());
             Auth.cerrarSesion();
-            App.app.setLoginScene(); // También aquí
+            App.app.setLoginScene();
         }
     }
 }

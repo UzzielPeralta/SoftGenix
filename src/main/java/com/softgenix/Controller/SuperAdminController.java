@@ -2,7 +2,6 @@ package com.softgenix.Controller;
 
 import com.softgenix.App.App;
 import com.softgenix.App.Utils.Auth;
-import com.softgenix.App.Utils.Path;
 import com.softgenix.Dao.BoardDAO;
 import com.softgenix.Dao.CardDAO;
 import com.softgenix.Model.Board;
@@ -11,6 +10,7 @@ import com.softgenix.Model.Column;
 import com.softgenix.Model.User;
 import com.softgenix.Service.BoardService;
 import com.softgenix.Service.UserService;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -40,7 +40,7 @@ public class SuperAdminController implements Initializable {
         return contadorTemporalTableros--;
     }
 
-    // Cache para mejorar rendimiento
+
     private ObservableList<User> usuariosCache;
     private ObservableList<Board> tablerosCache;
     private Map<Integer, ObservableList<Card>> tarjetasCache;
@@ -119,16 +119,7 @@ public class SuperAdminController implements Initializable {
     // Tablero seleccionado actualmente
     private Board tableroActual;
 
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        // Configurar todas las columnas una sola vez
-        configurarColumnasTablas();
 
-        // Inicializar cache
-        usuariosCache = FXCollections.observableArrayList();
-        tablerosCache = FXCollections.observableArrayList();
-        tarjetasCache = new HashMap<>();
-    }
 
     /**
      * Configura todas las columnas de las tablas una sola vez
@@ -168,7 +159,7 @@ public class SuperAdminController implements Initializable {
     }
 
     /**
-     * Método optimizado para ocultar todos los paneles
+     * ocultar todos los paneles
      */
     private void ocultarTodosPaneles() {
         AnchorPane[] paneles = {usuariosPanel, tablerosPanel, tarjetasPanel, asignacionPanel};
@@ -203,10 +194,11 @@ public class SuperAdminController implements Initializable {
     }
 
     /**
-     * Método optimizado para crear usuario con validación previa
+     * crear usuario con validación previa
      */
     @FXML
     private void crearUsuario(ActionEvent event) {
+
         if (!validarCamposUsuario()) return;
 
         String email = emailField.getText().trim();
@@ -252,9 +244,9 @@ public class SuperAdminController implements Initializable {
                 if (index >= 0) {
                     usuariosCache.set(index, usuarioReal);
                 }
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin creado correctamente");
+
             } else {
-                // Si falló, remover temporal
+
                 usuariosCache.remove(usuarioTemporal);
                 mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el admin");
             }
@@ -288,43 +280,79 @@ public class SuperAdminController implements Initializable {
         return true;
     }
 
-    @FXML
-    private void eliminarUsuario(ActionEvent event) {
-        User usuarioSeleccionado = usuariosTableView.getSelectionModel().getSelectedItem();
-        if (usuarioSeleccionado == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un admin para eliminar");
-            return;
-        }
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        // Configurar todas las columnas una sola vez
+        configurarColumnasTablas();
 
-        // Solo permitir eliminar usuarios tipo ADMIN
-        if (!"ADMIN".equals(usuarioSeleccionado.getRol())) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Solo puede eliminar admin con rol ADMIN");
-            return;
-        }
+        usuariosCache = FXCollections.observableArrayList();
+        tablerosCache = FXCollections.observableArrayList();
+        tarjetasCache = new HashMap<>();
 
-        Task<Boolean> task = new Task<Boolean>() {
+        // PRE-CARGAR datos en segundo plano inmediatamente
+        precargarDatosIniciales();
+    }
+
+    /**
+     * Pre-carga todos los datos necesarios en segundo plano al inicializar
+     */
+    private void precargarDatosIniciales() {
+        // Cargar usuarios y tableros en paralelo
+        Task<Void> preloadTask = new Task<Void>() {
             @Override
-            protected Boolean call() throws Exception {
-                return UserService.eliminarUsuario(usuarioSeleccionado.getId());
+            protected Void call() throws Exception {
+                try {
+                    // Cargar usuarios en paralelo
+                    Thread usuariosThread = new Thread(() -> {
+                        try {
+                            List<User> usuarios = UserService.obtenerUsuariosPorRol("ADMIN");
+                            Platform.runLater(() -> {
+                                usuariosCache.setAll(usuarios);
+                                ultimaActualizacionUsuarios = System.currentTimeMillis();
+                                usuariosTableView.setItems(usuariosCache);
+                            });
+                        } catch (Exception e) {
+                            System.err.println("Error pre-cargando usuarios: " + e.getMessage());
+                        }
+                    });
+
+                    // Cargar tableros en paralelo
+                    Thread tablerosThread = new Thread(() -> {
+                        try {
+                            List<Board> tableros = BoardService.obtenerTablerosUsuario();
+                            Platform.runLater(() -> {
+                                tablerosCache.setAll(tableros);
+                                ultimaActualizacionTableros = System.currentTimeMillis();
+                                tablerosTableView.setItems(tablerosCache);
+                            });
+                        } catch (Exception e) {
+                            System.err.println("Error pre-cargando tableros: " + e.getMessage());
+                        }
+                    });
+
+                    usuariosThread.start();
+                    tablerosThread.start();
+
+                    // Esperar a que terminen ambos hilos
+                    usuariosThread.join();
+                    tablerosThread.join();
+
+                } catch (Exception e) {
+                    System.err.println("Error en pre-carga: " + e.getMessage());
+                }
+                return null;
             }
         };
 
-        task.setOnSucceeded(e -> {
-            if (task.getValue()) {
-                // Eliminar directamente del cache sin recargar toda la tabla
-                usuariosCache.remove(usuarioSeleccionado);
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Admin eliminado correctamente");
-            } else {
-                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el admin");
-            }
+        preloadTask.setOnSucceeded(e -> {
+            System.out.println("Pre-carga completada exitosamente");
         });
 
-        task.setOnFailed(e -> {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error al eliminar: " + task.getException().getMessage());
-        });
-
-        new Thread(task).start();
+        Thread preloadThread = new Thread(preloadTask);
+        preloadThread.setDaemon(true);
+        preloadThread.start();
     }
+
     @FXML
     private void cerrarSesion(ActionEvent event) {
         try {
@@ -338,7 +366,7 @@ public class SuperAdminController implements Initializable {
     }
 
     /**
-     * Método optimizado para cargar usuarios con cache
+     *cargar usuarios con cache
      */
     private void cargarUsuarios() {
         long tiempoActual = System.currentTimeMillis();
@@ -360,8 +388,8 @@ public class SuperAdminController implements Initializable {
 
         task.setOnSucceeded(e -> {
             List<User> usuarios = task.getValue();
-            // Actualizar cache manteniendo la referencia de la tabla
-            usuariosCache.setAll(usuarios); // Usar setAll en lugar de clear/addAll
+
+            usuariosCache.setAll(usuarios);
             ultimaActualizacionUsuarios = tiempoActual;
         });
 
@@ -387,7 +415,7 @@ public class SuperAdminController implements Initializable {
     }
 
     /**
-     * Método optimizado para cargar usuarios disponibles
+     * cargar usuarios disponibles
      */
     private void cargarUsuariosDisponibles() {
         Task<List<User>> task = new Task<List<User>>() {
@@ -416,7 +444,7 @@ public class SuperAdminController implements Initializable {
     }
 
     /**
-     * Método optimizado para cargar tableros con cache
+     *optimizado para cargar tableros con cache
      */
     private void cargarTableros() {
         long tiempoActual = System.currentTimeMillis();
@@ -448,7 +476,7 @@ public class SuperAdminController implements Initializable {
     }
 
     /**
-     * Crea un nuevo tablero optimizado
+     * Crea un nuevo tablero
      */
     @FXML
     private void crearTablero() {
@@ -465,7 +493,7 @@ public class SuperAdminController implements Initializable {
         tableroTemporal.setNombre(nombre);
         tableroTemporal.setDescripcion(descripcion);
         tableroTemporal.setPropietarioId(Auth.getUsuarioActual().getId());
-        // ID temporal más pequeño usando hash
+
         tableroTemporal.setId(Math.abs(nombre.hashCode() % 100000));
 
         // Agregar inmediatamente a la tabla
@@ -503,14 +531,14 @@ public class SuperAdminController implements Initializable {
                 }
 
             } else {
-                // Si falló, remover el temporal
+
                 tablerosCache.remove(tableroTemporal);
 
             }
         });
 
         task.setOnFailed(e -> {
-            // Si falló, remover el temporal
+
             tablerosCache.remove(tableroTemporal);
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error inesperado: " + task.getException().getMessage());
         });
@@ -524,10 +552,33 @@ public class SuperAdminController implements Initializable {
     private void eliminarTablero() {
         Board tableroSeleccionado = tablerosTableView.getSelectionModel().getSelectedItem();
         if (tableroSeleccionado == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un tablero para eliminar");
+            mostrarAlerta(Alert.AlertType.WARNING, "Advertencia", "Por favor selecciona un tablero para eliminar.");
             return;
         }
 
+        // Confirmar eliminación
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar eliminación");
+        confirmacion.setHeaderText("¿Estás seguro de que deseas eliminar este tablero?");
+        confirmacion.setContentText("Tablero: " + tableroSeleccionado.getNombre() +
+                "\n⚠️ Se eliminarán todas las tarjetas y columnas asociadas.");
+
+        if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        // ELIMINACIÓN OPTIMISTA: Remover inmediatamente de la UI
+        int posicionOriginal = tablerosCache.indexOf(tableroSeleccionado);
+        tablerosCache.remove(tableroSeleccionado);
+
+        // Limpiar caché de tarjetas relacionadas
+        tarjetasCache.remove(tableroSeleccionado.getId());
+
+        // Mostrar feedback inmediato
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Tablero eliminado: " + tableroSeleccionado.getNombre());
+
+        // Eliminar de la base de datos en segundo plano
         Task<Boolean> task = new Task<Boolean>() {
             @Override
             protected Boolean call() throws Exception {
@@ -536,32 +587,195 @@ public class SuperAdminController implements Initializable {
         };
 
         task.setOnSucceeded(e -> {
-            if (task.getValue()) {
-                // Eliminar directamente del cache sin recargar
-                tablerosCache.remove(tableroSeleccionado);
-                tarjetasCache.remove(tableroSeleccionado.getId());
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero eliminado correctamente");
-            } else {
-                mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el tablero");
-            }
+            boolean eliminado = task.getValue();
+            Platform.runLater(() -> {
+                if (eliminado) {
+                    // Éxito - mantener la eliminación
+                    System.out.println("Tablero eliminado exitosamente de BD");
+
+                    // Restaurar título después de 2 segundos
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                            Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }).start();
+
+                } else {
+                    // Error - restaurar el tablero en la UI en su posición original
+                    if (posicionOriginal >= 0 && posicionOriginal < tablerosCache.size()) {
+                        tablerosCache.add(posicionOriginal, tableroSeleccionado);
+                    } else {
+                        tablerosCache.add(tableroSeleccionado);
+                    }
+
+                    headerTitleLabel.setText("✗ Error al eliminar tablero");
+                    mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el tablero.");
+
+                    // Restaurar título después de 3 segundos
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(3000);
+                            Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }).start();
+                }
+            });
         });
 
         task.setOnFailed(e -> {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error al eliminar: " + task.getException().getMessage());
+            Platform.runLater(() -> {
+                // Error - restaurar el tablero en la UI
+                if (posicionOriginal >= 0 && posicionOriginal < tablerosCache.size()) {
+                    tablerosCache.add(posicionOriginal, tableroSeleccionado);
+                } else {
+                    tablerosCache.add(tableroSeleccionado);
+                }
+
+                headerTitleLabel.setText("✗ Error de conexión");
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error de conexión al eliminar tablero.");
+
+                System.err.println("Error al eliminar tablero: " + task.getException().getMessage());
+
+                // Restaurar título después de 3 segundos
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(3000);
+                        Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
+                }).start();
+            });
         });
 
-        new Thread(task).start();
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
-     * Carga las tarjetas del tablero actual con cache
+     * Elimina el usuario seleccionado de forma optimista
+     */
+    @FXML
+    private void eliminarUsuario(ActionEvent event) {
+        User usuarioSeleccionado = usuariosTableView.getSelectionModel().getSelectedItem();
+        if (usuarioSeleccionado == null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Advertencia", "Por favor selecciona un usuario para eliminar.");
+            return;
+        }
+
+        // Confirmar eliminación
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar eliminación");
+        confirmacion.setHeaderText("¿Estás seguro de que deseas eliminar este usuario?");
+        confirmacion.setContentText("Usuario: " + usuarioSeleccionado.getNombre() + " (" + usuarioSeleccionado.getEmail() + ")");
+
+        if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        // ELIMINACIÓN OPTIMISTA: Remover inmediatamente de la UI
+        int posicionOriginal = usuariosCache.indexOf(usuarioSeleccionado);
+        usuariosCache.remove(usuarioSeleccionado);
+
+        // Mostrar feedback inmediato
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Usuario eliminado: " + usuarioSeleccionado.getNombre());
+
+        // Eliminar de la base de datos en segundo plano
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return UserService.eliminarUsuario(usuarioSeleccionado.getId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean eliminado = task.getValue();
+            Platform.runLater(() -> {
+                if (eliminado) {
+                    // Éxito - mantener la eliminación
+                    System.out.println("Usuario eliminado exitosamente de BD");
+
+                    // Restaurar título después de 2 segundos
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                            Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }).start();
+
+                } else {
+                    // Error - restaurar el usuario en la UI en su posición original
+                    if (posicionOriginal >= 0 && posicionOriginal < usuariosCache.size()) {
+                        usuariosCache.add(posicionOriginal, usuarioSeleccionado);
+                    } else {
+                        usuariosCache.add(usuarioSeleccionado);
+                    }
+
+                    headerTitleLabel.setText("✗ Error al eliminar usuario");
+                    mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo eliminar el usuario.");
+
+                    // Restaurar título después de 3 segundos
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(3000);
+                            Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }).start();
+                }
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                // Error - restaurar el usuario en la UI
+                if (posicionOriginal >= 0 && posicionOriginal < usuariosCache.size()) {
+                    usuariosCache.add(posicionOriginal, usuarioSeleccionado);
+                } else {
+                    usuariosCache.add(usuarioSeleccionado);
+                }
+
+                headerTitleLabel.setText("✗ Error de conexión");
+                mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error de conexión al eliminar usuario.");
+
+                System.err.println("Error al eliminar usuario: " + task.getException().getMessage());
+
+                // Restaurar título después de 3 segundos
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(3000);
+                        Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                    }
+                }).start();
+            });
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * Carga las tarjetas del tablero actual
      */
     private void cargarTarjetasTablero() {
         if (tableroActual == null) return;
 
         int tableroId = tableroActual.getId();
 
-        // Verificar cache de tarjetas para este tablero
+
         if (tarjetasCache.containsKey(tableroId)) {
             tarjetasTableView.setItems(tarjetasCache.get(tableroId));
             return;

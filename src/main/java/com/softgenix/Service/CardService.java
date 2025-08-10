@@ -14,7 +14,7 @@ public class CardService {
      * @param titulo Título de la tarjeta
      * @param descripcion Descripción de la tarjeta
      * @param columnaId ID de la columna a la que pertenece
-     * @return true si se creó correctamente, false en caso contrario
+     * @return
      */
     public static boolean crearTarjeta(String titulo, String descripcion, int columnaId) {
         if (!Auth.isLoggedIn()) {
@@ -50,7 +50,7 @@ public class CardService {
     /**
      * Elimina una tarjeta
      * @param tarjetaId ID de la tarjeta a eliminar
-     * @return true si se eliminó correctamente, false en caso contrario
+     * @return
      */
     public static boolean eliminarTarjeta(int tarjetaId) {
         if (!Auth.isLoggedIn()) {
@@ -64,7 +64,7 @@ public class CardService {
      * Mueve una tarjeta a otra columna
      * @param tarjetaId ID de la tarjeta
      * @param nuevaColumnaId ID de la nueva columna
-     * @return true si se movió correctamente, false en caso contrario
+     * @return
      */
     public static boolean moverTarjeta(int tarjetaId, int nuevaColumnaId) {
         if (!Auth.isLoggedIn()) {

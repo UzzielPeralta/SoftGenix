@@ -1,9 +1,7 @@
 package com.softgenix.Controller;
 
 import com.softgenix.App.App;
-import com.softgenix.App.Config.Database;
 import com.softgenix.App.Utils.Auth;
-import com.softgenix.App.Utils.Path;
 import com.softgenix.Dao.BoardDAO;
 import com.softgenix.Dao.CardDAO;
 import com.softgenix.Dao.UserDAO;
@@ -15,6 +13,7 @@ import com.softgenix.Service.BoardService;
 import com.softgenix.Service.UserService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,18 +22,24 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+
 
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class AdminController implements Initializable {
+    // Agregar al inicio de la clase AdminController
+    private ObservableList<User> usuariosCache = FXCollections.observableArrayList();
+    private ObservableList<Board> tablerosCache = FXCollections.observableArrayList();
+    private Map<Integer, List<User>> usuariosAsignadosCache = new HashMap<>();
+    private long ultimaActualizacionUsuarios = 0;
+    private long ultimaActualizacionTableros = 0;
+    private static final long TIEMPO_CACHE = 30000; // 30 segundos
 
-    // Columnas de tarjetas - actualizada con la columna de proceso
+    // Columnas de tarjetas
     @FXML
     private TableColumn<Card, String> tarjetaProcesoColumn;
 
@@ -118,7 +123,61 @@ public class AdminController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configurarTodasLasColumnas();
-        cargarUsuarios();
+
+        // Pre-cargar datos inmediatamente
+        precargarDatosIniciales();
+    }
+
+    /**
+     * Pre-carga todos los datos necesarios en segundo plano
+     */
+    private void precargarDatosIniciales() {
+        Task<Void> preloadTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    // Cargar usuarios en paralelo
+                    Thread usuariosThread = new Thread(() -> {
+                        try {
+                            List<User> usuarios = UserService.obtenerUsuariosPorRol("USER");
+                            Platform.runLater(() -> {
+                                usuariosCache.setAll(usuarios);
+                                ultimaActualizacionUsuarios = System.currentTimeMillis();
+                            });
+                        } catch (Exception e) {
+                            System.err.println("Error pre-cargando usuarios: " + e.getMessage());
+                        }
+                    });
+
+                    // Cargar tableros en paralelo
+                    Thread tablerosThread = new Thread(() -> {
+                        try {
+                            List<Board> tableros = BoardService.obtenerTablerosUsuario();
+                            Platform.runLater(() -> {
+                                tablerosCache.setAll(tableros);
+                                ultimaActualizacionTableros = System.currentTimeMillis();
+                            });
+                        } catch (Exception e) {
+                            System.err.println("Error pre-cargando tableros: " + e.getMessage());
+                        }
+                    });
+
+                    usuariosThread.start();
+                    tablerosThread.start();
+
+                    usuariosThread.join();
+                    tablerosThread.join();
+
+                } catch (Exception e) {
+                    System.err.println("Error en pre-carga: " + e.getMessage());
+                }
+                return null;
+            }
+        };
+
+        Thread preloadThread = new Thread(preloadTask);
+        preloadThread.setDaemon(true);
+        preloadThread.start();
     }
 
     private void configurarTodasLasColumnas() {
@@ -141,7 +200,7 @@ public class AdminController implements Initializable {
         nombreAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         emailAsignadoColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        // Tarjetas - actualizada con la columna de proceso
+        // Tarjetas
         tarjetaTituloColumn.setCellValueFactory(new PropertyValueFactory<>("titulo"));
         tarjetaDescripcionColumn.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
 
@@ -170,13 +229,13 @@ public class AdminController implements Initializable {
         });
     }
 
-    // Método mejorado para obtener el icono según el estado
+
     private String obtenerIconoPorEstado(String estado) {
         if (estado == null) return "❓";
 
         String estadoLimpio = estado.toLowerCase().trim();
 
-        // Patrones para completado - CORREGIDO para incluir "completadas"
+        // Patrones para completado
         if (estadoLimpio.contains("completado") ||
                 estadoLimpio.contains("completadas") || // AGREGADO
                 estadoLimpio.contains("done") ||
@@ -221,13 +280,12 @@ public class AdminController implements Initializable {
         return "❓";
     }
 
-    // Método corregido para colores - mismo patrón
     private String obtenerColorPorEstado(String estado) {
         if (estado == null) return "#6c757d";
 
         String estadoLimpio = estado.toLowerCase().trim();
 
-        // Patrones para completado - CORREGIDO
+        // Patrones para completado
         if (estadoLimpio.contains("completado") ||
                 estadoLimpio.contains("completadas") || // AGREGADO
                 estadoLimpio.contains("done") ||
@@ -330,19 +388,74 @@ public class AdminController implements Initializable {
 
         if (!validarCamposUsuario(email, password, nombre)) return;
 
-        ejecutarTareaAsincrona(
-                () -> UserService.crearUsuario(email, password, nombre, "USER"),
-                resultado -> {
-                    if (resultado) {
-                        mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Usuario creado correctamente");
-                        limpiarFormulario();
-                        cargarUsuarios();
-                    } else {
-                        mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear el usuario");
-                    }
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Creando usuario...");
+
+        // Limpiar formulario inmediatamente para mejor UX
+        limpiarFormulario();
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return UserService.crearUsuario(email, password, nombre, "USER");
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean creado = task.getValue();
+            Platform.runLater(() -> {
+                if (creado) {
+                    headerTitleLabel.setText("✓ Usuario creado exitosamente");
+
+                    // RECARGA SILENCIOSA - mantiene datos actuales mientras carga
+                    recargarUsuariosSilenciosamente();
+
+                    restaurarTituloTrasDelay(tituloOriginal, 2000);
+                } else {
+                    headerTitleLabel.setText("✗ Error al crear usuario");
+                    restaurarTituloTrasDelay(tituloOriginal, 3000);
                 }
-        );
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                headerTitleLabel.setText("✗ Error de conexión");
+                restaurarTituloTrasDelay(tituloOriginal, 3000);
+            });
+        });
+
+        new Thread(task).start();
     }
+
+    /**
+     * Recarga usuarios desde la base de datos SIN limpiar la tabla actual
+     */
+    private void recargarUsuariosSilenciosamente() {
+        Task<List<User>> task = new Task<List<User>>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return UserService.obtenerUsuariosPorRol("USER");
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<User> usuariosNuevos = task.getValue();
+            Platform.runLater(() -> {
+                // Solo actualizar si realmente hay cambios
+                if (!usuariosNuevos.equals(usuariosCache)) {
+                    usuariosCache.setAll(usuariosNuevos);
+                    ultimaActualizacionUsuarios = System.currentTimeMillis();
+                    // La tabla se actualiza automáticamente porque está vinculada al ObservableList
+                }
+            });
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
 
     @FXML
     private void eliminarUsuario() {
@@ -355,33 +468,115 @@ public class AdminController implements Initializable {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Confirmar eliminación");
         confirmacion.setHeaderText("¿Está seguro de eliminar este usuario?");
-        confirmacion.setContentText("Admin: " + usuarioSeleccionado.getNombre() +
+        confirmacion.setContentText("Usuario: " + usuarioSeleccionado.getNombre() +
                 "\nEsta acción no se puede deshacer.");
 
-        if (confirmacion.showAndWait().get() == ButtonType.OK) {
-            ejecutarTareaAsincrona(
-                    () -> UserDAO.eliminarUsuario(usuarioSeleccionado.getId()),
-                    eliminado -> {
-                        if (eliminado) {
-                            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito",
-                                    "Usuario eliminado correctamente");
-                            cargarUsuarios();
-                        } else {
-                            mostrarAlerta(Alert.AlertType.ERROR, "Error",
-                                    "No se pudo eliminar el usuario");
-                        }
-                    }
-            );
+        if (confirmacion.showAndWait().get() != ButtonType.OK) {
+            return;
         }
+
+        // ELIMINACIÓN OPTIMISTA: Remover inmediatamente de la UI
+        int posicionOriginal = usuariosCache.indexOf(usuarioSeleccionado);
+        usuariosCache.remove(usuarioSeleccionado);
+
+        // Mostrar feedback inmediato
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Usuario eliminado: " + usuarioSeleccionado.getNombre());
+
+        // Eliminar de la base de datos en segundo plano
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return UserDAO.eliminarUsuario(usuarioSeleccionado.getId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean eliminado = task.getValue();
+            Platform.runLater(() -> {
+                if (eliminado) {
+                    // Éxito
+                    restaurarTituloTrasDelay(tituloOriginal, 2000);
+                } else {
+                    // Error - restaurar usuario
+                    if (posicionOriginal >= 0) {
+                        usuariosCache.add(posicionOriginal, usuarioSeleccionado);
+                    } else {
+                        usuariosCache.add(usuarioSeleccionado);
+                    }
+                    headerTitleLabel.setText("✗ Error al eliminar usuario");
+                    restaurarTituloTrasDelay(tituloOriginal, 3000);
+                }
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                // Restaurar usuario
+                if (posicionOriginal >= 0) {
+                    usuariosCache.add(posicionOriginal, usuarioSeleccionado);
+                } else {
+                    usuariosCache.add(usuarioSeleccionado);
+                }
+                headerTitleLabel.setText("✗ Error de conexión");
+                restaurarTituloTrasDelay(tituloOriginal, 3000);
+            });
+        });
+
+        new Thread(task).start();
     }
 
     private void cargarUsuarios() {
-        ejecutarTareaAsincrona(
-                () -> UserService.obtenerUsuariosPorRol("USER"),
-                usuarios -> usuariosTableView.setItems(FXCollections.observableArrayList(usuarios))
-        );
-    }
+        // SIEMPRE mostrar datos existentes primero (si los hay)
+        if (!usuariosCache.isEmpty()) {
+            usuariosTableView.setItems(usuariosCache);
 
+            // Si el caché es reciente, no recargar
+            if ((System.currentTimeMillis() - ultimaActualizacionUsuarios) < TIEMPO_CACHE) {
+                return;
+            }
+        }
+
+        // Si no hay datos, mostrar loading en el header
+        if (usuariosCache.isEmpty()) {
+            headerTitleLabel.setText("Cargando usuarios...");
+        }
+
+        // Cargar/actualizar datos en segundo plano
+        Task<List<User>> task = new Task<List<User>>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return UserService.obtenerUsuariosPorRol("USER");
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<User> usuariosNuevos = task.getValue();
+            Platform.runLater(() -> {
+                usuariosCache.setAll(usuariosNuevos);
+                ultimaActualizacionUsuarios = System.currentTimeMillis();
+                usuariosTableView.setItems(usuariosCache);
+
+                // Solo restaurar título si estaba en "Cargando..."
+                if (headerTitleLabel.getText().contains("Cargando")) {
+                    headerTitleLabel.setText("Gestión de Usuario");
+                }
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                if (headerTitleLabel.getText().contains("Cargando")) {
+                    headerTitleLabel.setText("Error cargando usuarios");
+                    restaurarTituloTrasDelay("Gestión de Usuario", 3000);
+                }
+            });
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
     // === GESTIÓN DE TABLEROS ===
 
     @FXML
@@ -391,10 +586,106 @@ public class AdminController implements Initializable {
     }
 
     private void cargarTableros() {
-        ejecutarTareaAsincrona(
-                () -> BoardService.obtenerTablerosUsuario(),
-                tableros -> tablerosTableView.setItems(FXCollections.observableArrayList(tableros))
-        );
+        // Si ya tenemos datos en caché, usarlos inmediatamente
+        if (!tablerosCache.isEmpty()) {
+            tablerosTableView.setItems(tablerosCache);
+
+            // Si el caché es reciente, no recargar
+            if ((System.currentTimeMillis() - ultimaActualizacionTableros) < TIEMPO_CACHE) {
+                return;
+            }
+        }
+
+        // Actualizar en segundo plano
+        Task<List<Board>> task = new Task<List<Board>>() {
+            @Override
+            protected List<Board> call() throws Exception {
+                return BoardService.obtenerTablerosUsuario();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<Board> tableros = task.getValue();
+            tablerosCache.setAll(tableros);
+            ultimaActualizacionTableros = System.currentTimeMillis();
+            tablerosTableView.setItems(tablerosCache);
+        });
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    /**
+     * Eliminar tablero con eliminación optimista
+     */
+    @FXML
+    private void eliminarTablero() {
+        Board tableroSeleccionado = tablerosTableView.getSelectionModel().getSelectedItem();
+        if (tableroSeleccionado == null) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Seleccione un tablero para eliminar");
+            return;
+        }
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar eliminación");
+        confirmacion.setHeaderText("¿Está seguro de eliminar este tablero?");
+        confirmacion.setContentText("Tablero: " + tableroSeleccionado.getNombre() +
+                "\n⚠️ Se eliminarán todas las tarjetas y columnas asociadas.");
+
+        if (confirmacion.showAndWait().get() != ButtonType.OK) {
+            return;
+        }
+
+        // ELIMINACIÓN OPTIMISTA
+        int posicionOriginal = tablerosCache.indexOf(tableroSeleccionado);
+        tablerosCache.remove(tableroSeleccionado);
+
+        // Limpiar caché relacionado
+        usuariosAsignadosCache.remove(tableroSeleccionado.getId());
+
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Tablero eliminado: " + tableroSeleccionado.getNombre());
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return BoardService.eliminarTablero(tableroSeleccionado.getId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean eliminado = task.getValue();
+            Platform.runLater(() -> {
+                if (eliminado) {
+                    restaurarTituloTrasDelay(tituloOriginal, 2000);
+                } else {
+                    // Restaurar tablero
+                    if (posicionOriginal >= 0) {
+                        tablerosCache.add(posicionOriginal, tableroSeleccionado);
+                    } else {
+                        tablerosCache.add(tableroSeleccionado);
+                    }
+                    headerTitleLabel.setText("✗ Error al eliminar tablero");
+                    restaurarTituloTrasDelay(tituloOriginal, 3000);
+                }
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                // Restaurar tablero
+                if (posicionOriginal >= 0) {
+                    tablerosCache.add(posicionOriginal, tableroSeleccionado);
+                } else {
+                    tablerosCache.add(tableroSeleccionado);
+                }
+                headerTitleLabel.setText("✗ Error de conexión");
+                restaurarTituloTrasDelay(tituloOriginal, 3000);
+            });
+        });
+
+        new Thread(task).start();
     }
 
     // === GESTIÓN DE TARJETAS ===
@@ -407,7 +698,7 @@ public class AdminController implements Initializable {
             return;
         }
 
-        // Limpiar caché al cambiar tablero
+
         columnasCache.clear();
 
         tablerosPanel.setVisible(false);
@@ -437,25 +728,63 @@ public class AdminController implements Initializable {
             return;
         }
 
+        // Crear tarjeta temporal para UI inmediata
+        Card tarjetaTemporal = new Card();
+        tarjetaTemporal.setId(-1); // ID temporal
+        tarjetaTemporal.setTitulo(titulo);
+        tarjetaTemporal.setDescripcion(descripcion);
+        tarjetaTemporal.setColumnaId(columnaId);
+        tarjetaTemporal.setCreadoPorUsuarioId(Auth.getUsuarioActual().getId());
+
+        // Agregar inmediatamente a la UI
+        tarjetasTableView.getItems().add(0, tarjetaTemporal);
+
+        // Limpiar formulario inmediatamente
+        tarjetaTituloField.clear();
+        tarjetaDescripcionField.clear();
+
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Tarjeta creada: " + titulo);
+
+        // Crear en base de datos
         Card tarjeta = new Card();
         tarjeta.setTitulo(titulo);
         tarjeta.setDescripcion(descripcion);
         tarjeta.setColumnaId(columnaId);
         tarjeta.setCreadoPorUsuarioId(Auth.getUsuarioActual().getId());
 
-        ejecutarTareaAsincrona(
-                () -> CardDAO.crearTarjeta(tarjeta),
-                resultado -> {
-                    if (resultado) {
-                        mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tarjeta creada correctamente");
-                        tarjetaTituloField.clear();
-                        tarjetaDescripcionField.clear();
-                        cargarTarjetasTablero();
-                    } else {
-                        mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo crear la tarjeta");
-                    }
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return CardDAO.crearTarjeta(tarjeta);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean creada = task.getValue();
+            Platform.runLater(() -> {
+                if (creada) {
+                    // Éxito - recargar para obtener IDs reales
+                    cargarTarjetasTablero();
+                    restaurarTituloTrasDelay(tituloOriginal, 2000);
+                } else {
+                    // Error - remover tarjeta temporal
+                    tarjetasTableView.getItems().remove(tarjetaTemporal);
+                    headerTitleLabel.setText("✗ Error al crear tarjeta");
+                    restaurarTituloTrasDelay(tituloOriginal, 3000);
                 }
-        );
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                tarjetasTableView.getItems().remove(tarjetaTemporal);
+                headerTitleLabel.setText("✗ Error de conexión");
+                restaurarTituloTrasDelay(tituloOriginal, 3000);
+            });
+        });
+
+        new Thread(task).start();
     }
 
     @FXML
@@ -479,11 +808,11 @@ public class AdminController implements Initializable {
         );
     }
 
-    // Método optimizado para cargar tarjetas con información completa
+
     private void cargarTarjetasTablero() {
         if (tableroActual == null) return;
 
-         // Agregar esta línea temporalmente
+
 
         ejecutarTareaAsincrona(
                 () -> {
@@ -492,7 +821,7 @@ public class AdminController implements Initializable {
                 },
                 tarjetas -> {
                     tarjetasTableView.setItems(FXCollections.observableArrayList(tarjetas));
-                    // Actualizar el label con información adicional
+
                     long completadas = tarjetas.stream()
                             .filter(t -> "Completado".equals(obtenerNombreColumnaPorId(t.getColumnaId())))
                             .count();
@@ -516,45 +845,42 @@ public class AdminController implements Initializable {
     }
 
     private void cargarTablerosAdmin() {
-        ejecutarTareaAsincrona(
-                () -> BoardService.obtenerTablerosUsuario(),
-                tableros -> {
-                    tablerosComboBox.getItems().clear();
-                    for (Board tablero : tableros) {
-                        tablerosComboBox.getItems().add(tablero.getId() + " - " + tablero.getNombre());
-                    }
-                    if (!tableros.isEmpty()) {
-                        tablerosComboBox.getSelectionModel().selectFirst();
-                        actualizarUsuariosAsignados();
-                    }
-                }
-        );
+        // Usar caché de tableros
+        if (!tablerosCache.isEmpty()) {
+            actualizarComboBoxTableros();
+            return;
+        }
+
+        Task<List<Board>> task = new Task<List<Board>>() {
+            @Override
+            protected List<Board> call() throws Exception {
+                return BoardService.obtenerTablerosUsuario();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            tablerosCache.setAll(task.getValue());
+            actualizarComboBoxTableros();
+        });
+
+        new Thread(task).start();
     }
 
-    private void cargarUsuariosDisponibles() {
-        ejecutarTareaAsincrona(
-                () -> UserService.obtenerUsuariosPorRol("USER"),
-                usuarios -> {
-                    usuariosDisponiblesTable.getItems().clear();
-                    usuariosDisponiblesTable.getItems().addAll(usuarios);
-                }
-        );
+    private void actualizarComboBoxTableros() {
+        tablerosComboBox.getItems().clear();
+        for (Board tablero : tablerosCache) {
+            // SIN MOSTRAR ID - Solo nombre
+            tablerosComboBox.getItems().add(tablero.getNombre());
+        }
+        if (!tablerosCache.isEmpty()) {
+            tablerosComboBox.getSelectionModel().selectFirst();
+            actualizarUsuariosAsignados();
+        }
     }
 
-    @FXML
-    private void actualizarUsuariosAsignados() {
-        String seleccion = tablerosComboBox.getValue();
-        if (seleccion == null) return;
 
-        int tableroId = Integer.parseInt(seleccion.split(" - ")[0]);
-        ejecutarTareaAsincrona(
-                () -> BoardService.obtenerUsuariosAsignadosATablero(tableroId),
-                usuarios -> {
-                    usuariosAsignadosTable.getItems().clear();
-                    usuariosAsignadosTable.getItems().addAll(usuarios);
-                }
-        );
-    }
+
+
 
     @FXML
     private void asignarTableroAUsuario() {
@@ -566,45 +892,117 @@ public class AdminController implements Initializable {
             return;
         }
 
-        int tableroId = Integer.parseInt(seleccion.split(" - ")[0]);
-        ejecutarTareaAsincrona(
-                () -> BoardService.asignarTableroAUsuario(tableroId, usuario.getId()),
-                resultado -> {
-                    if (resultado) {
-                        mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero asignado correctamente");
-                        actualizarUsuariosAsignados();
-                    } else {
-                        mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo asignar el tablero");
+        // Buscar tablero por nombre
+        Board tableroSeleccionado = tablerosCache.stream()
+                .filter(b -> b.getNombre().equals(seleccion))
+                .findFirst()
+                .orElse(null);
+
+        if (tableroSeleccionado == null) return;
+
+        int tableroId = tableroSeleccionado.getId();
+
+        // ASIGNACIÓN OPTIMISTA
+        if (usuariosAsignadosCache.containsKey(tableroId)) {
+            usuariosAsignadosCache.get(tableroId).add(usuario);
+            usuariosAsignadosTable.getItems().add(usuario);
+        }
+
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Tablero asignado a " + usuario.getNombre());
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return BoardService.asignarTableroAUsuario(tableroId, usuario.getId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean asignado = task.getValue();
+            Platform.runLater(() -> {
+                if (asignado) {
+                    restaurarTituloTrasDelay(tituloOriginal, 2000);
+                } else {
+                    // Revertir asignación optimista
+                    if (usuariosAsignadosCache.containsKey(tableroId)) {
+                        usuariosAsignadosCache.get(tableroId).remove(usuario);
+                        usuariosAsignadosTable.getItems().remove(usuario);
                     }
+                    headerTitleLabel.setText("✗ Error al asignar tablero");
+                    restaurarTituloTrasDelay(tituloOriginal, 3000);
                 }
-        );
+            });
+        });
+
+        new Thread(task).start();
     }
 
-    @FXML
-    private void desasignarTableroDeUsuario() {
-        String seleccion = tablerosComboBox.getValue();
-        User usuario = usuariosAsignadosTable.getSelectionModel().getSelectedItem();
+    private void cargarUsuariosDisponibles() {
+        // Verificar si necesitamos recargar
+        boolean necesitaRecarga = usuariosCache.isEmpty() ||
+                (System.currentTimeMillis() - ultimaActualizacionUsuarios) > TIEMPO_CACHE;
 
-        if (seleccion == null || usuario == null) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Debe seleccionar un tablero y un usuario");
+        if (!necesitaRecarga) {
+            usuariosDisponiblesTable.setItems(usuariosCache);
             return;
         }
 
-        int tableroId = Integer.parseInt(seleccion.split(" - ")[0]);
-        ejecutarTareaAsincrona(
-                () -> BoardService.desasignarTableroDeUsuario(tableroId, usuario.getId()),
-                resultado -> {
-                    if (resultado) {
-                        mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Tablero desasignado correctamente");
-                        actualizarUsuariosAsignados();
-                    } else {
-                        mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo desasignar el tablero");
-                    }
-                }
-        );
+        // Cargar datos frescos
+        Task<List<User>> task = new Task<List<User>>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return UserService.obtenerUsuariosPorRol("USER");
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            usuariosCache.setAll(task.getValue());
+            ultimaActualizacionUsuarios = System.currentTimeMillis();
+            usuariosDisponiblesTable.setItems(usuariosCache);
+        });
+
+        new Thread(task).start();
     }
 
-    // === MÉTODOS AUXILIARES OPTIMIZADOS ===
+    @FXML
+    private void actualizarUsuariosAsignados() {
+        String seleccion = tablerosComboBox.getValue();
+        if (seleccion == null) return;
+
+        // Buscar tablero por nombre
+        Board tableroSeleccionado = tablerosCache.stream()
+                .filter(b -> b.getNombre().equals(seleccion))
+                .findFirst()
+                .orElse(null);
+
+        if (tableroSeleccionado == null) return;
+
+        int tableroId = tableroSeleccionado.getId();
+
+        // Usar caché si está disponible
+        if (usuariosAsignadosCache.containsKey(tableroId)) {
+            usuariosAsignadosTable.setItems(FXCollections.observableArrayList(usuariosAsignadosCache.get(tableroId)));
+            return;
+        }
+
+        Task<List<User>> task = new Task<List<User>>() {
+            @Override
+            protected List<User> call() throws Exception {
+                return BoardService.obtenerUsuariosAsignadosATablero(tableroId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<User> usuarios = task.getValue();
+            usuariosAsignadosCache.put(tableroId, usuarios);
+            usuariosAsignadosTable.setItems(FXCollections.observableArrayList(usuarios));
+        });
+
+        new Thread(task).start();
+    }
+
+    // === MÉTODOS AUXILIARES ===
 
     private void cambiarPanel(AnchorPane panelDestino, String titulo) {
         ocultarTodosPaneles();
@@ -613,30 +1011,6 @@ public class AdminController implements Initializable {
         panelDestino.setManaged(true);
     }
 
-    private <T> void ejecutarTareaAsincrona(TaskCallback<T> callback, ResultHandler<T> onSuccess) {
-        Task<T> task = new Task<T>() {
-            @Override
-            protected T call() throws Exception {
-                return callback.call();
-            }
-
-            @Override
-            protected void succeeded() {
-                Platform.runLater(() -> onSuccess.handle(getValue()));
-            }
-
-            @Override
-            protected void failed() {
-                Platform.runLater(() ->
-                        mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error de conexión: " + getException().getMessage())
-                );
-            }
-        };
-
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
-    }
 
     private boolean validarCamposUsuario(String email, String password, String nombre) {
         if (email.isEmpty() || password.isEmpty() || nombre.isEmpty()) {
@@ -692,6 +1066,84 @@ public class AdminController implements Initializable {
     }
 
     @FXML
+    private void desasignarTableroDeUsuario() {
+        String seleccion = tablerosComboBox.getValue();
+        User usuario = usuariosAsignadosTable.getSelectionModel().getSelectedItem();
+
+        if (seleccion == null || usuario == null) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Debe seleccionar un tablero y un usuario");
+            return;
+        }
+
+        // Buscar tablero por nombre
+        Board tableroSeleccionado = tablerosCache.stream()
+                .filter(b -> b.getNombre().equals(seleccion))
+                .findFirst()
+                .orElse(null);
+
+        if (tableroSeleccionado == null) return;
+
+        int tableroId = tableroSeleccionado.getId();
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar desasignación");
+        confirmacion.setHeaderText("¿Está seguro de desasignar este tablero?");
+        confirmacion.setContentText("Usuario: " + usuario.getNombre() +
+                "\nTablero: " + tableroSeleccionado.getNombre());
+
+        if (confirmacion.showAndWait().get() != ButtonType.OK) {
+            return;
+        }
+
+        // DESASIGNACIÓN OPTIMISTA
+        if (usuariosAsignadosCache.containsKey(tableroId)) {
+            usuariosAsignadosCache.get(tableroId).remove(usuario);
+            usuariosAsignadosTable.getItems().remove(usuario);
+        }
+
+        String tituloOriginal = headerTitleLabel.getText();
+        headerTitleLabel.setText("✓ Tablero desasignado de " + usuario.getNombre());
+
+        Task<Boolean> task = new Task<Boolean>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return BoardService.desasignarTableroDeUsuario(tableroId, usuario.getId());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            boolean desasignado = task.getValue();
+            Platform.runLater(() -> {
+                if (desasignado) {
+                    restaurarTituloTrasDelay(tituloOriginal, 2000);
+                } else {
+                    // Restaurar usuario si falló
+                    if (usuariosAsignadosCache.containsKey(tableroId)) {
+                        usuariosAsignadosCache.get(tableroId).add(usuario);
+                        usuariosAsignadosTable.getItems().add(usuario);
+                    }
+                    headerTitleLabel.setText("✗ Error al desasignar");
+                    restaurarTituloTrasDelay(tituloOriginal, 3000);
+                }
+            });
+        });
+
+        task.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                // Restaurar usuario
+                if (usuariosAsignadosCache.containsKey(tableroId)) {
+                    usuariosAsignadosCache.get(tableroId).add(usuario);
+                    usuariosAsignadosTable.getItems().add(usuario);
+                }
+                headerTitleLabel.setText("✗ Error de conexión");
+                restaurarTituloTrasDelay(tituloOriginal, 3000);
+            });
+        });
+
+        new Thread(task).start();
+    }
+
+    @FXML
     private void cerrarSesion(ActionEvent event) {
         try {
             Auth.cerrarSesion();
@@ -704,16 +1156,7 @@ public class AdminController implements Initializable {
         }
     }
 
-    // Interfaces funcionales para callbacks
-    @FunctionalInterface
-    private interface TaskCallback<T> {
-        T call() throws Exception;
-    }
 
-    @FunctionalInterface
-    private interface ResultHandler<T> {
-        void handle(T result);
-    }
 
 
     private void debugColumnNames() {
@@ -729,5 +1172,49 @@ public class AdminController implements Initializable {
             System.err.println("Error obteniendo columnas: " + e.getMessage());
 
         }
+    }
+    /**
+     * Restaura el título del header después de un delay
+     */
+    private void restaurarTituloTrasDelay(String tituloOriginal, int delayMs) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(delayMs);
+                Platform.runLater(() -> headerTitleLabel.setText(tituloOriginal));
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+    }
+
+    @FunctionalInterface
+    interface TaskCallback<T> {
+        T call() throws Exception;
+    }
+
+    @FunctionalInterface
+    interface ResultHandler<T> {
+        void handle(T result);
+    }
+
+    /**
+     * Ejecuta una tarea asíncrona y maneja el resultado en el hilo de JavaFX
+     */
+    private <T> void ejecutarTareaAsincrona(TaskCallback<T> tarea, ResultHandler<T> callback) {
+        Task<T> task = new Task<T>() {
+            @Override
+            protected T call() throws Exception {
+                return tarea.call();
+            }
+        };
+
+        task.setOnSucceeded(e -> Platform.runLater(() -> callback.handle(task.getValue())));
+
+        task.setOnFailed(e -> Platform.runLater(() -> {
+            System.err.println("Error en tarea asíncrona: " + task.getException().getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Error de conexión");
+        }));
+
+        new Thread(task).start();
     }
 }

@@ -120,6 +120,6 @@ public class User {
 
     @Override
     public String toString() {
-        return nombre; // Para mostrarse en los controles de JavaFX
+        return nombre;
     }
 }

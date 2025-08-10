@@ -24,7 +24,6 @@ public class ColumnDao {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Column columna = new Column();
-                    // Usa los nombres exactos de las columnas como están en la BD
                     columna.setId(rs.getInt("ID"));
                     columna.setNombre(rs.getString("NOMBRE"));
                     columna.setTableroId(rs.getInt("TABLERO_ID"));

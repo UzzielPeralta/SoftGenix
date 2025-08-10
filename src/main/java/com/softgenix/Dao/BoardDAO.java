@@ -11,7 +11,7 @@ import java.util.List;
 
 public class BoardDAO {
 
-    // Pool de conexiones reutilizable
+    // Pool de conexiones
     private static final String CREAR_TABLERO_SQL = "INSERT INTO TABLEROS (NOMBRE, PROPIETARIO_ID, DESCRIPCION) VALUES (?, ?, ?)";
     private static final String OBTENER_TABLERO_SQL = "SELECT ID, NOMBRE, PROPIETARIO_ID FROM TABLEROS WHERE ID = ?";
     private static final String OBTENER_TODOS_TABLEROS_SQL = "SELECT ID, NOMBRE, PROPIETARIO_ID, DESCRIPCION FROM TABLEROS ORDER BY ID DESC";
@@ -91,7 +91,7 @@ public class BoardDAO {
             e.printStackTrace();
         }
 
-        return 0; // Si no hay columnas, empezamos en 0
+        return 0;
     }
 
     /**
@@ -208,10 +208,6 @@ public class BoardDAO {
 
         return columnas;
     }
-    /**
-     /**
-
-
 
     /**
      * Elimina un tablero y todas sus columnas y tarjetas asociadas

@@ -11,7 +11,7 @@ public class Column {
     private int tableroId;
     private List<Card> tarjetas;
 
-    // Constantes para tipos de columnas comunes
+    // Constantes para tipos de columnas
     public static final String TIPO_PENDIENTE = "Pendiente";
     public static final String TIPO_EN_PROCESO = "En Proceso";
     public static final String TIPO_COMPLETADO = "Completado";

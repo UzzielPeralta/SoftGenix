@@ -15,7 +15,7 @@ public class UserService {
      * @param password Contraseña del usuario
      * @param nombre Nombre completo del usuario
      * @param rol Rol del usuario (ADMIN o USER)
-     * @return true si se creó correctamente, false en caso contrario
+     * @return
      */
     public static boolean crearUsuario(String email, String password, String nombre, String rol) {
         // Validar permisos según el rol
@@ -27,7 +27,7 @@ public class UserService {
             return false; // Otros roles no pueden crear usuarios
         }
 
-        // El resto del código se mantiene igual...
+
         // Validaciones básicas
         if (email == null || email.trim().isEmpty() ||
                 password == null || password.trim().isEmpty() ||
@@ -81,7 +81,7 @@ public class UserService {
     /**
      * Elimina un usuario del sistema
      * @param userId ID del usuario a eliminar
-     * @return true si se eliminó correctamente, false en caso contrario
+     * @return
      */
     public static boolean eliminarUsuario(int userId) {
         // Solo SUPERADMIN puede eliminar usuarios

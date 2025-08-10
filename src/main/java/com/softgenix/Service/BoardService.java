@@ -18,14 +18,13 @@ public class BoardService {
     /**
      * Crea un nuevo tablero
      /**
-     * Crea un nuevo tablero
      * @param nombre Nombre del tablero
-     * @param descripcion Descripción del tablero
-     * @return true si se creó correctamente, false en caso contrario
+     * @param descripcion Descripción
+     * @return
      */
     public static boolean crearTablero(String nombre, String descripcion, int propietarioId) {
         try {
-            // Si descripción es null o vacía, usar valor por defecto
+
             if (descripcion == null || descripcion.trim().isEmpty()) {
                 descripcion = "Sin descripción";
             }
@@ -57,7 +56,7 @@ public class BoardService {
      * Crea una nueva columna en un tablero
      * @param tableroId ID del tablero
      * @param nombre Nombre de la columna
-     * @return true si se creó correctamente, false en caso contrario
+     * @return
      */
     public static boolean crearColumna(int tableroId, String nombre) {
         if (!Auth.isAdmin()) {
@@ -74,7 +73,7 @@ public class BoardService {
             return false;
         }
 
-        // Obtener el orden máximo actual para agregar al final
+
         int ordenMaximo = BoardDAO.obtenerOrdenMaximoColumnas(tableroId);
 
         Column columna = new Column();
@@ -97,12 +96,10 @@ public class BoardService {
         }
 
         int usuarioId = Auth.getUsuarioActual().getId();
-        // Cambiar obtenerTablerosPorUsuario por obtenerTablerosUsuario
         return BoardDAO.obtenerTablerosUsuario();
     }
 
     /**
-     * Obtiene las columnas de un tablero como strings formateados
      * @param tableroId ID del tablero
      * @return Lista de strings con formato "ID - Nombre"
      */
@@ -149,14 +146,13 @@ public class BoardService {
             return new ArrayList<>();
         }
 
-        // Usar BoardAssignmentDAO para obtener los tableros asignados
         return BoardAssignmentDAO.obtenerTablerosAsignadosAUsuario(userId);
     }
     /**
      * Asigna un tablero a un usuario
      * @param tableroId ID del tablero
      * @param usuarioId ID del usuario
-     * @return true si se asignó correctamente, false en caso contrario
+     * @return
      */
     public static boolean asignarTableroAUsuario(int tableroId, int usuarioId) {
         if (!Auth.isAdmin()) {
@@ -182,7 +178,7 @@ public class BoardService {
      * Desasigna un tablero de un usuario
      * @param tableroId ID del tablero
      * @param usuarioId ID del usuario
-     * @return true si se desasignó correctamente, false en caso contrario
+     * @return
      */
     public static boolean desasignarTableroDeUsuario(int tableroId, int usuarioId) {
         if (!Auth.isAdmin()) {

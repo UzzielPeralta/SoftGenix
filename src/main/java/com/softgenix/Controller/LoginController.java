@@ -29,10 +29,10 @@ public class LoginController {
             return;
         }
 
-        // Deshabilitar botón para evitar múltiples clicks
+
         loginButton.setDisable(true);
 
-        // Login asíncrono para mejor UX
+        // Login asíncrono
         Task<User> loginTask = new Task<User>() {
             @Override
             protected User call() throws Exception {
